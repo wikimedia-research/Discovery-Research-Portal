@@ -3,10 +3,10 @@
 
 ## Analyses
 
-* 11 Feb 2016 [Analysis of JavaScript Support](Analyses/JS Support) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Wikipedia_Portal_Traffic_and_JavaScript_Support.pdf), [Task](https://phabricator.wikimedia.org/T124655))
-* 16 March 2016 [Analysis of 10% Non-Search-Referred Traffic](Analyses/10% Referrals) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Non-Search_Engine_Referred_Traffic_to_Wikipedia_Portal.pdf), [Task](https://phabricator.wikimedia.org/T129563))
-* 18 March 2016 [Investigation of Portal Post-Deployment Statistics](Analyses/Post-Deployment (2016-03-18)) ([Report](https://commons.wikimedia.org/wiki/File:Initial_Assessment_of_New_Wikipedia_Portal%27s_Search_Box_Deployment.pdf), [Task](https://phabricator.wikimedia.org/T130235))
-* 24 March 2016 [Assessment of Browser Language Preferences](Analyses/Browser Preferred Languages) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Clickthrough_Rates_and_User_Preferred_Languages_on_Wikipedia_Portal.pdf), [Task](https://phabricator.wikimedia.org/T129679))
+* 11 Feb 2016 [Analysis of JavaScript Support](tree/master/Analyses/JavaScript%20Support) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Wikipedia_Portal_Traffic_and_JavaScript_Support.pdf), [Task](https://phabricator.wikimedia.org/T124655))
+* 16 March 2016 [Analysis of 10% Non-Search-Referred Traffic](tree/master/Analyses/10%25%20Referrals) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Non-Search_Engine_Referred_Traffic_to_Wikipedia_Portal.pdf), [Task](https://phabricator.wikimedia.org/T129563))
+* 18 March 2016 [Investigation of Portal Post-Deployment Statistics](tree/master/Analyses/Post-Deployment%20(2016-03-18)) ([Report](https://commons.wikimedia.org/wiki/File:Initial_Assessment_of_New_Wikipedia_Portal%27s_Search_Box_Deployment.pdf), [Task](https://phabricator.wikimedia.org/T130235))
+* 24 March 2016 [Assessment of Browser Language Preferences](tree/master/Analyses/Browser%20Preferred%20Languages) ([Report](https://commons.wikimedia.org/wiki/File:Analysis_of_Clickthrough_Rates_and_User_Preferred_Languages_on_Wikipedia_Portal.pdf), [Task](https://phabricator.wikimedia.org/T129679))
 
 ## Contact
 
