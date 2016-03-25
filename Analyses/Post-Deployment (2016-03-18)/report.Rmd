@@ -1,0 +1,184 @@
+---
+title: "Assessment of New Wikipedia Portal’s Search Box Deployment"
+author: "Mikhail Popov"
+date: "March 18, 2016"
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 7
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(ggplot2)
+library(dplyr)
+significance_mark <- function(p) {
+  if (p < 0.001) {
+    return("***")
+  } else if (p < 0.01) {
+    return("**")
+  } else if (p < 0.05) {
+    return("*")
+  } else {
+    return("")
+  }
+}
+```
+
+\renewcommand{\abstractname}{Executive Summary}
+\begin{abstract}
+On 10 March 2016 the Discovery/Portal team deployed a change to the Wikipedia Portal (wikipedia.org) as a result of a successful A/B test. However, when looking at the Discovery Dashboards, we noticed that the clickthrough rates we were seeing did not align with our expectations of the positive impact of the change. In this report we performed an intervention analysis of the clickthrough rate time series data. We found that the deployment of the new search box with suggestions has had a statistically significant positive impact (p = 0.011) on the search clickthrough rate, raising it by approximately 1.88\% on average.
+\end{abstract}
+
+## Introduction
+
+On 10 March 2016 the Discovery/Portal team deployed a change to the Wikipedia Portal (wikipedia.org) as a result of a **[successful A/B test](https://meta.wikimedia.org/wiki/Wikipedia.org_Portal_Improvements#A.2FB_testing)**.
+
+```{r demo, fig.height = 3, fig.cap = 'New search box and type-ahead update pushed to http://www.wikipedia.org on 10 March 2016.'}
+library(png)
+library(grid)
+img <- readPNG("demo.png")
+grid.raster(img)
+```
+
+In **[the A/B test report](https://commons.wikimedia.org/wiki/File:First_Portal_Test.pdf)**, we reported that 1.7-5.5% more sessions were likely to end in a clickthrough compared to the control, and that the probability of the user making a search-related clickthrough went up by 1.88-5.88%, both substantial improvements. However, when looking at the **[Discovery Dashboards](http://discovery.wmflabs.org/portal/#action_breakdown)**, we noticed that the clickthrough rates we were seeing did not align with our expectations of the positive impact of the change.
+
+```{r data}
+clickthroughs <- readr::read_csv("data/clickthroughs_all.csv")
+search_clickthroughs <- readr::read_csv("data/clickthroughs_search.csv")
+```
+
+```{r eda_clickthroughs_all, fig.cap = 'No visible impact on overall clickthrough rate from deploying the new search box.'}
+ggplot(data = clickthroughs, aes(x = date, color = portal)) +
+  geom_line(aes(y = clickthrough), size = 1.2) +
+  # geom_line(aes(y = `naive clickthrough`), linetype = "dotted") +
+  scale_x_datetime("Day", date_breaks = "2 weeks", date_labels = "%a, %d %b") +
+  scale_y_continuous("Rate", labels = scales::percent_format(), limits = c(0, 1)) +
+  scale_color_discrete("Wikipedia Portal Search Box") +
+  geom_vline(xintercept = as.numeric(clickthroughs$date[clickthroughs$date == lubridate::ymd("2016-03-10")]) + 43200,
+             linetype = "dashed", color = "black") +
+  ggthemes::theme_gdocs() +
+  theme(rect = element_blank(), legend.position = "bottom", legend.direction = "horizontal") +
+  ggtitle("Overall clickthrough rate, before and after deployment")
+```
+
+```{r eda_clickthrough_search, fig.cap = 'No visible impact on search clickthrough rate from deploying the new search box.'}
+ggplot(data = search_clickthroughs, aes(x = date, y = clickthrough, color = portal)) +
+  geom_line(size = 1.2) +
+  scale_x_datetime("Day", date_breaks = "2 weeks", date_labels = "%a, %d %b") +
+  scale_y_continuous("Rate", labels = scales::percent_format(), limits = c(0, 1)) +
+  scale_color_discrete("Wikipedia Portal Search Box") +
+  geom_vline(xintercept = as.numeric(clickthroughs$date[clickthroughs$date == lubridate::ymd("2016-03-10")]) + 43200,
+             linetype = "dashed", color = "black") +
+  ggthemes::theme_gdocs() +
+  theme(rect = element_blank(), legend.position = "bottom", legend.direction = "horizontal") +
+  ggtitle("Search clickthrough rate, before and after deployment")
+```
+
+The daily fluctuations, possibly small effect, and only a week of data post-deployment make it difficult to visually tell if there has been an impact (positive OR negative). In this report, we perform an intervention analysis of the clickthrough rates.
+
+\newpage
+
+## Methods
+
+```{r cda_data}
+clickthrough_ts <- ts(clickthroughs$`naive clickthrough`, frequency = 1)
+search_clickthrough_ts <- ts(search_clickthroughs$clickthrough, frequency = 1)
+```
+
+We explored a variety of models and settled on seasonal ARIMA with a period of 7 days. This mdoel of clickthrough rate $\mathbf{y} = y_1, \ldots, y_n$ with accompanying intervention indicator $x_t \in \{0~\text{if old portal}, 1~\text{if new portal}\}$ is specified as:
+
+$$y_t = \epsilon_t + \sum_{i=1}^p \phi_i y_{t-i} + \sum_{i=1}^q \theta_i \epsilon_{t-i} + \beta x_t$$
+
+We are interested in inference on $\beta$, the unknown permament change in the mean due to the intervention -- the deployment of the new search box.
+
+```{r cda_arima}
+new_portal <- as.numeric(clickthroughs$portal == "new")
+fit_overall <- arima(clickthrough_ts,
+                     order = c(2, 1, 2),
+                     seasonal = list(order = c(1, 1, 1), period = 7),
+                     xreg = new_portal)
+new_portal <- as.numeric(search_clickthroughs$portal == "new")
+fit_search <- arima(search_clickthrough_ts,
+                    order = c(2, 1, 2),
+                    seasonal = list(order = c(1, 1, 1), period = 7),
+                    include.mean = TRUE,
+                    xreg = new_portal)
+```
+
+```{r cda_plot, fig.height = 8, fig.width = 8}
+par(mfrow = c(2, 1))
+plot(clickthrough_ts, lwd = 3,
+     ylab = "Rate", xlab = "Day",
+     main = "Overall Clickthrough Rate on Wikipedia Portal",
+     yaxt = "n", ylim = c(0.45, 0.65), xaxt = "n")
+axis(2, at = seq(0.45, 0.65, 0.05), labels = sprintf("%.0f%%", seq(45, 65, 5)), las = 2)
+axis(1, at = seq(1, nrow(clickthroughs), 7),
+     labels = as.character(clickthroughs$date[seq(1, nrow(clickthroughs), 7)], format = "%a (%d %b)"))
+abline(v = which(clickthroughs$date == lubridate::ymd("2016-03-10")), lty = "dashed", col = "blue", lwd = 2)
+lines(residuals(fit_overall) + clickthrough_ts, col = "red", lwd = 2)
+legend("topleft", c("ARIMA(2,1,2)x(1,1,1)x7 fit with AIC = -328.029", "New Portal Deployed"),
+       lty = c("solid", "dashed"), col = c("red", "blue"), lwd = 2, bty = "n")
+plot(search_clickthrough_ts, lwd = 3,
+     ylab = "Rate", xlab = "Day",
+     main = "Overall Clickthrough Rate on Wikipedia Portal",
+     yaxt = "n", ylim = c(0.35, 0.5), xaxt = "n")
+axis(2, at = seq(0.35, 0.5, 0.05), labels = sprintf("%.0f%%", seq(35, 50, 5)), las = 2)
+axis(1, at = seq(1, nrow(search_clickthroughs), 7),
+     labels = as.character(search_clickthroughs$date[seq(1, nrow(search_clickthroughs), 7)], format = "%a (%d %b)"))
+abline(v = which(search_clickthroughs$date == lubridate::ymd("2016-03-10")), lty = "dashed", col = "blue", lwd = 2)
+lines(residuals(fit_search) + search_clickthrough_ts, col = "red", lwd = 2)
+legend("topleft", c("ARIMA(2,1,2)x(1,1,1)x7 fit with AIC = -330.215", "New Portal Deployed"),
+       lty = c("solid", "dashed"), col = c("red", "blue"), lwd = 2, bty = "n")
+```
+
+Visual inspection and model evaluation metrics showed the models we used accurately captured the time series pattern, its seasonality, and without overfitting.
+
+## Results and Discussion
+
+```{r cda_pvalue}
+pval_overall <- fit_overall %>%
+  broom::tidy() %>%
+  mutate(p.value = (1-pnorm(abs(fit_overall$coef)/sqrt(diag(fit_overall$var.coef))))*2) %>%
+  filter(term == "new_portal") %>%
+  mutate(lower = estimate - 1.96 * std.error,
+         upper = estimate + 1.96 * std.error) %>%
+  transmute(`Effect of deployment on…` = "Overall (All Sections) CTR",
+            `% Change` = 100 * estimate,
+            `Std. Error` = 100 * std.error,
+            `95% C.I.` = sprintf("(%.2f%%, %.2f%%)", 100 * lower, 100 * upper),
+            `p-value` = p.value,
+            ` ` = significance_mark(`p-value`))
+pval_search <- fit_search %>%
+  broom::tidy() %>%
+  mutate(p.value = (1-pnorm(abs(fit_search$coef)/sqrt(diag(fit_search$var.coef))))*2) %>%
+  filter(term == "new_portal") %>%
+  mutate(lower = estimate - 1.96 * std.error,
+         upper = estimate + 1.96 * std.error) %>%
+  transmute(`Effect of deployment on…` = "Search CTR",
+            `% Change` = 100 * estimate,
+            `Std. Error` = 100 * std.error,
+            `95% C.I.` = sprintf("(%.2f%%, %.2f%%)", 100 * lower, 100 * upper),
+            `p-value` = p.value,
+            ` ` = significance_mark(`p-value`))
+rbind(pval_overall, pval_search) %>%
+  knitr::kable(digits = 3, align = c("r", "r", "c"),
+               caption = "Summary table of inference on the effect of deploying the update.")
+```
+
+The deployment of the new search box with suggestions has had a statistically significant positive impact on the search clickthrough rate, raising it by approximately 1.88% (0.43%-3.33%) on average. As we expected, the deployment did not have statistically significant impact on the overall clickthrough rate, which includes users clicking on language links and Wikimedia project links.
+
+It should be noted (again) that these results are based on a week of post-deployment event logging data. It will be interesting, if not necessary, to revisit this particular question again in several weeks' time and perform a re-evaluation of the deployment's impact. However, between the results of the initial A/B test and this report, the evidence does point toward a successful launch.
+
+## References
+
+Cryer, J. D., & Chan, K.-S. (2008). Time Series Analysis. New York, NY: Springer Science & Business Media. <URL: http://doi.org/10.1007/978-0-387-75959-3>.
+
+Hyndman RJ (2015). _forecast: Forecasting functions for time series and
+linear models_. R package version 6.2, <URL:
+http://github.com/robjhyndman/forecast>.
+
+Hyndman RJ and Khandakar Y (2008). “Automatic time series forecasting: the
+forecast package for R.” _Journal of Statistical Software_, *26*(3), pp.
+1-22. <URL: http://ideas.repec.org/a/jss/jstsof/27i03.html>.
