@@ -1,0 +1,3 @@
+[submodule "Analyses/JS Support"]
+	path = Analyses/JS Support
+	url = git://github.com/wikimedia-research/Discovery-Portal-Adhoc-JavaScriptSupport.git
