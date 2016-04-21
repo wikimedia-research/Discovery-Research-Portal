@@ -1,3 +1,9 @@
 [submodule "Analyses/JS Support"]
 	path = Analyses/JS Support
 	url = git://github.com/wikimedia-research/Discovery-Portal-Adhoc-JavaScriptSupport.git
+[submodule "Analyses/Wikimedia vs Wikipedia Portals"]
+	path = Analyses/Wikimedia vs Wikipedia Portals
+	url = git://github.com/wikimedia-research/Discovery-Portal-Adhoc-WikimediaPortal.git
+[submodule "Experiments/Language Detect and Primary Link AB Test"]
+	path = Experiments/Language Detect and Primary Link AB Test
+	url = git://github.com/wikimedia-research/Discovery-Portal-Test-PrimaryLinkLangDetect.git
