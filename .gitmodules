@@ -7,3 +7,6 @@
 [submodule "Experiments/Language Detect and Primary Link AB Test"]
 	path = Experiments/Language Detect and Primary Link AB Test
 	url = git://github.com/wikimedia-research/Discovery-Portal-Test-PrimaryLinkLangDetect.git
+[submodule "Experiments/Secondary Links Collapse AB Test"]
+	path = Experiments/Secondary Links Collapse AB Test
+	url = git://github.com/wikimedia-research/Discovery-Portal-Test-SecondaryLinks.git
