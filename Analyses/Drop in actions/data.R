@@ -1,5 +1,5 @@
-start_date <- as.Date("2016-05-11")
-end_date <- as.Date("2016-07-11")
+start_date <- as.Date("2016-05-13")
+end_date <- as.Date("2016-07-13")
 events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
   cat("Fetching Portal EL data from", as.character(date), "\n")
   data <- wmf::build_query("SELECT
@@ -20,7 +20,17 @@ events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date)
 library(magrittr)
 events$date %<>% lubridate::ymd()
 events$ts %<>% lubridate::ymd_hms()
-events$identity <- vapply(paste(events$session_id, events$user_agent, events$country, sep = "|"), httr::sha1_hash, "VALUE", key = "Portal Event Logging")
+
+## Refinement:
+
+unique_ua <- unique(events$user_agent)
+ua_data <- uaparser::parse_agents(unique_ua, fields = c("device", "os", "os_major", "browser", "browser_major"))
+ua_data$user_agent <- unique_ua
+events <- dplyr::left_join(events, ua_data, by = "user_agent")
+
+# events$identity <- vapply(paste(events$session_id, events$user_agent, events$country, sep = "|"), httr::sha1_hash, "VALUE", key = "Portal Event Logging")
+events$identity <- sprintf("%06.0f", as.numeric(factor(paste(events$session_id, events$user_agent, events$country, sep = "|"))))
+
 events <- events[order(events$identity, events$ts, events$type), ]
 
 data("ISO_3166_1", package = "ISOcodes")
@@ -39,12 +49,6 @@ states <- data.frame(abbrv = state.abb, name = state.name, stringsAsFactors = FA
 events <- dplyr::left_join(events, states, by = c("us_state" = "abbrv"))
 events <- dplyr::rename(events, us_abbrv = us_state, us_state = name)
 events$us_abbrv[events$us_abbrv == ""] <- as.character(NA)
-# sum(events$country == "US" & is.na(events$us_abbrv), na.rm = TRUE) # should be 0 after the patch
-
-uniques <- dplyr::distinct(events[, c("user_agent", "identity")])
-ua_data <- uaparser::parse_agents(uniques$user_agent, fields = c("device", "os", "os_major", "browser", "browser_major"))
-ua_data$identity <- uniques$identity
-events <- dplyr::left_join(events, ua_data, by = "identity")
 
 events <- events %>%
   dplyr::group_by(identity) %>%
@@ -53,15 +57,14 @@ events <- events %>%
   dplyr::ungroup() %>%
   dplyr::filter(visit > 0)
 
-## To investigate later:
-# > length(unique(events$session_id))
-# [1] 14610
-# > length(unique(events$identity))
-# [1] 14665
-
-events <- dplyr::select(events, date, ts, identity, session_id, visit, type, section_used, country_name, us_state, device, os, os_major, browser, browser_major)
+events <- dplyr::select(events, identity, session_id, date, ts, visit, type, section_used, country, country_name, us_state, device, os, os_major, browser, browser_major)
 
 readr::write_rds(events, "~/portal-T139109-data.rds", "gz")
 
 dir.create("data")
 system("scp stat2:/home/bearloga/portal-T139109-data.rds data/")
+
+# Read in and format the breakdown data
+dashboard_data <- data.table::as.data.table(polloi::read_dataset(path = "portal/clickthrough_breakdown.tsv"))
+dashboard_data <- dashboard_data[, j = list(section_used = section_used, proportion = events/sum(events), events = events), by = "date"]
+readr::write_rds(dplyr::as.tbl(as.data.frame(dashboard_data)), "data/dashboard-breakdown-data.rds", "gz")
