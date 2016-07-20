@@ -1,5 +1,5 @@
-start_date <- as.Date("2016-05-13")
-end_date <- as.Date("2016-07-13")
+end_date <- Sys.Date()-1 # as.Date("2016-07-19")
+start_date <- end_date # as.Date("2015-11-11")
 events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
   cat("Fetching Portal EL data from", as.character(date), "\n")
   data <- wmf::build_query("SELECT
@@ -9,6 +9,7 @@ events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date)
                            userAgent AS user_agent,
                            event_event_type AS type,
                            event_section_used AS section_used,
+                           event_destination AS destination,
                            LEFT(UPPER(event_country), 2) AS country,
                            CASE WHEN LEFT(event_country, 2) = 'US' THEN UPPER(SUBSTRING(event_country, 4, 5))
                            ELSE NULL END AS us_state",
@@ -59,12 +60,7 @@ events <- events %>%
 
 events <- dplyr::select(events, identity, session_id, date, ts, visit, type, section_used, country, country_name, us_state, device, os, os_major, browser, browser_major)
 
-readr::write_rds(events, "~/portal-T139109-data.rds", "gz")
+readr::write_rds(events, "~/portal-T138397-data.rds", "gz")
 
 dir.create("data")
-system("scp stat2:/home/bearloga/portal-T139109-data.rds data/")
-
-# Read in and format the breakdown data
-dashboard_data <- data.table::as.data.table(polloi::read_dataset(path = "portal/clickthrough_breakdown.tsv"))
-dashboard_data <- dashboard_data[, j = list(section_used = section_used, proportion = events/sum(events), events = events), by = "date"]
-readr::write_rds(dplyr::as.tbl(as.data.frame(dashboard_data)), "data/dashboard-breakdown-data.rds", "gz")
+system("scp stat2:/home/bearloga/portal-T138397-data.rds data/")
