@@ -1,8 +1,8 @@
-end_date <- Sys.Date()-1 # as.Date("2016-07-19")
-start_date <- end_date # as.Date("2015-11-11")
+start_date <- as.Date("2015-11-11")
+end_date <- as.Date("2016-07-20")
 events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
   cat("Fetching Portal EL data from", as.character(date), "\n")
-  data <- wmf::build_query("SELECT
+  data <- tryCatch(wmf::build_query("SELECT
                            LEFT(timestamp, 8) AS date,
                            event_session_id AS session_id,
                            timestamp AS ts,
@@ -15,7 +15,11 @@ events <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date)
                            ELSE NULL END AS us_state",
                            date = date,
                            table = "WikipediaPortal_14377354",
-                           conditionals = "((event_cohort IS NULL) OR (event_cohort IN ('null','baseline')))")
+                           conditionals = "((event_cohort IS NULL) OR (event_cohort IN ('null','baseline')))"),
+                   error = function(e) {
+                     cat("No EL data on that day.\n")
+                     return(NULL)
+                   }, finally = invisible(NULL))
   return(data)
 }))
 library(magrittr)
@@ -30,7 +34,7 @@ ua_data$user_agent <- unique_ua
 events <- dplyr::left_join(events, ua_data, by = "user_agent")
 
 # events$identity <- vapply(paste(events$session_id, events$user_agent, events$country, sep = "|"), httr::sha1_hash, "VALUE", key = "Portal Event Logging")
-events$identity <- sprintf("%06.0f", as.numeric(factor(paste(events$session_id, events$user_agent, events$country, sep = "|"))))
+events$identity <- sprintf("%010.0f", as.numeric(factor(paste(events$session_id, events$user_agent, events$country, sep = "|"))))
 
 events <- events[order(events$identity, events$ts, events$type), ]
 
@@ -51,6 +55,12 @@ events <- dplyr::left_join(events, states, by = c("us_state" = "abbrv"))
 events <- dplyr::rename(events, us_abbrv = us_state, us_state = name)
 events$us_abbrv[events$us_abbrv == ""] <- as.character(NA)
 
+events$destination[grepl("wikipedia.org/search-redirect.php", events$destination, fixed = TRUE)] <- "search-redirect.php"
+events$destination <- sub("https://", "", events$destination, fixed = TRUE)
+events$destination <- sub("http://", "", events$destination, fixed = TRUE)
+events$destination <- sub("(.*.\\org/)wiki/.*", "\\1", events$destination)
+events$destination <- sub("wikipedia.org/", "wikipedia.org", events$destination, fixed = TRUE)
+
 events <- events %>%
   dplyr::group_by(identity) %>%
   dplyr::arrange(ts) %>%
@@ -58,7 +68,13 @@ events <- events %>%
   dplyr::ungroup() %>%
   dplyr::filter(visit > 0)
 
-events <- dplyr::select(events, identity, session_id, date, ts, visit, type, section_used, country, country_name, us_state, device, os, os_major, browser, browser_major)
+# For space concerns, let's only keep (1) visits 1-10 for each session and (2) a maximum of 2 hours of events per session
+events <- dplyr::filter(events, visit < 11)
+session_lengths <- data.table::as.data.table(events)[, list(session_length = as.numeric(difftime(max(ts), min(ts), units = "secs"))), by = "identity"]
+identities <- session_lengths$identity[session_lengths$session_length <= 7200]
+events <- dplyr::filter(events, identity %in% identities)
+
+events <- dplyr::select(events, identity, session_id, date, ts, visit, type, section_used, destination, country, country_name, us_state, device, os, os_major, browser, browser_major)
 
 readr::write_rds(events, "~/portal-T138397-data.rds", "gz")
 

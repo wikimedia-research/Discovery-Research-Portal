@@ -1,0 +1,30 @@
+---
+title: "Report on Wikipedia Portal Visitors"
+author: "Mikhail Popov (Analysis & Report)"
+date: "21 July 2016"
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 7
+    fig_width: 5
+    includes:
+      in_header: header.tex
+    latex_engine: xelatex
+  html_document: default
+geometry: margin=1in
+subtitle: A Look At Session Lengths
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+\renewcommand{\abstractname}{Executive Summary}
+\begin{abstract}
+...
+\end{abstract}
+
+## Methods
+
+We used the [Siteviews tool](https://tools.wmflabs.org/siteviews) on [Wikimedia Tool Labs](https://wikitech.wikimedia.org/wiki/Portal:Tool_Labs) to obtain the [pageviews](https://meta.wikimedia.org/wiki/Pageviews_Analysis#Siteviews) for English, German, and French Wikipedias, which we used as the noncovariate in the Bayesian structural time series.
