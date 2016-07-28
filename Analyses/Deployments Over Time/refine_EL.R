@@ -59,6 +59,18 @@ events %>%
   ungroup %>%
   readr::write_csv("data/el_daily_click_breakdown.csv")
 
+# Raw proportions of actions (filtered)
+events %>%
+  mutate(section_used = ifelse(is.na(section_used), "no action", section_used)) %>%
+  group_by(Date = date, identity) %>%
+  arrange(ts) %>%
+  summarize(section_used = tail(section_used, 1)) %>%
+  group_by(Date, section_used) %>%
+  tally %>%
+  mutate(proportion = round(n/sum(n), 4)) %>%
+  ungroup %>%
+  readr::write_csv("data/el_daily_click_breakdown_filtered.csv")
+
 # US Traffic vs Non-US Traffic
 events %>%
   group_by(Date = date, Country = ifelse(country == "US", "US", "Non-US"), identity) %>%

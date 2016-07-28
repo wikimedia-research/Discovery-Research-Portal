@@ -6,14 +6,16 @@ deployments <- data.frame(
     as.Date("2016-03-10"),
     as.Date("2016-06-02"),
     as.Date("2016-05-18"),
-    as.Date("2016-07-04")#,
+    as.Date("2016-07-20")#,
+    # as.Date("2016-07-04")#,
     # as.Date("????-??-??")
   ),
   Deployment = c(
     "Search Box with Type-ahead & Metadata",
     "Detect Language & Resort Primary Links",
     "Sister Project Links Descriptive Text",
-    "RfC for new page design"#,
+    "End of Data for Assessment"#,
+    # "RfC for new page design",
     # "Collapse Other Languages"
   ),
   Phabricator = c(
@@ -21,6 +23,7 @@ deployments <- data.frame(
     "T133432",
     "T133732",
     NA#,
+    # NA,
     # T131526
   ),
   stringsAsFactors = FALSE
