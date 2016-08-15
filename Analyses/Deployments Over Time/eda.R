@@ -27,46 +27,57 @@ pageviews <- dplyr::left_join(readr::read_csv("data/pageviews_all_all.csv"),
                               readr::read_csv("data/portal_pageviews.csv"),
                               by = "Date") %>% keep_where(Date >= "2015-11-20")
 
-pageviews %>%
+{ pageviews %>%
   gather(Site, Pageviews, -Date) %>%
   ggplot(aes(x = Date, y = Pageviews, color = Site)) +
-  geom_line() +
+  geom_line(alpha = 0.6) +
+  geom_smooth(method = "gam", se = FALSE, formula = y ~ s(x, k = 20)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   scale_y_log10(breaks = union(c(1e6, 1e7, 1.5e7, 2e7, 3e7, 7e7), seq(1e6, 3.5e8, 5e7)),
                 labels = polloi::compress) +
-  my_theme() +
+  my_theme() + theme(legend.position = "bottom") +
   ggtitle("Pageviews") +
   geom_vline(data = deployments, aes(xintercept = as.numeric(Date)),
              linetype = "dashed") +
   geom_label(data = deployments, aes(x = Date, y = 5.1e7 + (Order-1) * 5e7, label = Deployment),
              color = "black", nudge_y = 0.05, fill = "white") +
   geom_point(data = deployments, aes(x = Date, y = 5.1e7 + (Order-1) * 5e7),
-             color = "black")
+             color = "black") +
+  scale_color_discrete(limits = c("en.wikipedia.org", "de.wikipedia.org", "ru.wikipedia.org", "fr.wikipedia.org", "wikipedia.org"))
+  } %>% ggsave("pageviews.png", plot = ., path = "figures",
+               units = "in", width = 15, height = 9, dpi = 300)
 
 ## Daily Aggregates
 
 el_daily <- readr::read_csv("data/el_daily_aggregates.csv") %>% keep_where(Date >= "2015-11-20")
 el_daily$Date %<>% as.Date
 
-el_daily %>%
-  ggplot(aes(x = Date, y = sessions)) +
+{ el_daily %>%
+  gather(type, count, -Date) %>%
+  ggplot(aes(x = Date, y = count)) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
   tufte(base_size = 12, base_family = "Gill Sans") +
   theme(panel.grid.major = element_line(color = "gray80"), panel.grid.major.y = element_blank()) +
   geom_line() +
   my_theme() +
-  ggtitle("Number of sampled sessions (visitors) over time",
-          subtitle = "Users were selected for Event Logging at a sampling rate of 1:200") +
-  geom_smooth(method = "gam", se = FALSE, formula = y ~ s(x, k = 20)) +
+  theme(panel.grid.major.y = element_line(color = "gray80"),
+        panel.grid.minor.y = element_line(color = "gray90")) +
+  facet_wrap(~type, nrow = 2) +
+  ggtitle("Number of sampled sessions (visitors) and visits over time",
+          subtitle = "Users were selected for Event Logging at a sampling rate of 1 in 200") +
+  geom_smooth(method = "gam", se = FALSE, formula = y ~ s(x, k = 20), color = RColorBrewer::brewer.pal(3, "Set1")[1], linetype = "dashed") +
+  geom_smooth(method = "gam", se = FALSE, formula = y ~ s(x, k = 11), color = RColorBrewer::brewer.pal(3, "Set1")[2]) +
   geom_vline(data = deployments, aes(xintercept = as.numeric(Date)),
              linetype = "dashed") +
   geom_label(data = deployments, aes(x = Date, y = 1e3*Order, label = Deployment),
              color = "black", fill = "white")
+} %>% ggsave("daily_aggregates.png", plot = ., path = "figures",
+             units = "in", width = 20, height = 10, dpi = 300)
 
 el_daily_us <- readr::read_csv("data/el_daily_aggregates_us.csv") %>% keep_where(Date >= "2015-11-20")
 el_daily_us$Date %<>% as.Date
 
-el_daily_us %>%
+{ el_daily_us %>%
   # mutate(Country = ifelse(is.na(Country), "(Not Available)", Country)) %>%
   ggplot(aes(x = Date, y = sessions, fill = Country)) +
   geom_area(position = "fill", color = "black") +
@@ -78,7 +89,11 @@ el_daily_us %>%
   geom_vline(data = deployments, aes(xintercept = as.numeric(Date)),
              linetype = "dashed") +
   geom_label(data = deployments, aes(x = Date, y = 0.1*Order, label = Deployment),
-             color = "black", fill = "white")
+             color = "black", fill = "white") +
+  geom_hline(yintercept = 0.5, color = "white", linetype = "dashed") +
+  theme(legend.position = "bottom") } %>%
+  ggsave("daily_aggregates_us.png", plot = ., path = "figures",
+         units = "in", width = 15, height = 9, dpi = 300)
 
 ## Clickthrough Rate
 
@@ -165,7 +180,8 @@ el_daily_breakdown_filtered$Date %<>% as.Date
   geom_vline(data = deployments, aes(xintercept = as.numeric(Date)),
              linetype = "dashed") +
   geom_text(data = deployments, aes(x = Date, y = 0.05, label = Deployment), color = "black",
-            angle = 90, hjust = "left", vjust = "bottom", nudge_x = -2, size = 3.5)
+            angle = 90, hjust = "left", vjust = "bottom", nudge_x = -2, size = 3.5) +
+  scale_color_discrete(limits = c("no action", "search", "primary links", "secondary links", "other projects"))
 } %>% cowplot::ggsave("action_breakdown.png", plot = ., path = "figures",
                       units = "in", width = 12, height = 6, dpi = 300)
 
@@ -179,12 +195,12 @@ el_daily_common$Date %<>% as.Date
   ggplot(aes(x = Date, y = proportion, color = Section)) +
   geom_line(alpha = 0.55) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b") +
-  scale_y_continuous("Proportion of searches with clickthroughs",
+  scale_y_continuous("Proportion of sessions (that had a clickthrough)",
                      labels = scales::percent_format(),
                      breaks = seq(0, 1, 0.1)) +
   geom_smooth(method = "gam", se = FALSE, formula = y ~ s(x, k = 4)) +
-  ggtitle("Daily Action Breakdown",
-          subtitle = "Most common section clicked per visit") +
+  ggtitle("Daily Action Breakdown (Most common section clicked per visit)",
+          subtitle = "Proportion of sessions where each section was the most commonly clicked one") +
   my_theme() +
   theme(legend.position = "bottom",
         panel.grid.major.y = element_line(color = "gray80"),
@@ -192,6 +208,7 @@ el_daily_common$Date %<>% as.Date
   geom_vline(data = deployments, aes(xintercept = as.numeric(Date)),
              linetype = "dashed") +
   geom_text(data = deployments, aes(x = Date, y = 0.05, label = Deployment), color = "black",
-            angle = 90, hjust = "left", vjust = "bottom", nudge_x = -2, size = 3.5)
+            angle = 90, hjust = "left", vjust = "bottom", nudge_x = -2, size = 3.5) +
+  scale_color_discrete(limits = c("search", "primary links", "secondary links", "other projects"))
 } %>% cowplot::ggsave("most_common.png", plot = ., path = "figures",
                       units = "in", width = 12, height = 6, dpi = 300)
