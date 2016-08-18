@@ -8,24 +8,31 @@ output:
   html_document:
     css: style.css
     fig_caption: yes
-    keep_md: yes
+    self_contained: no
     theme: cosmo
+    mathjax: null
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
 geometry: margin=1in
 subtitle: A Retrospective Statistical Analysis
 fontsize: 12pt
 ---
-
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
-
 <div id = "abstract">
-
 <h2>Executive Summary</h2>
-
 <p>For the past several months, the Portal team within Wikimedia Foundation's Discovery department has been working hard on making visual and practical improvements to the Wikipeda.org Portal page to improve user experience. These changes include a search box with article suggestions, descriptions of other Wikimedia projects, and detecting language and dynamically populating/resorting the links around the globe. Looking back at various engagement metrics, we found slightly increases but engagement with the page has stayed largely the same. Of course, engagement does not correlate with satisfaction, and we currently do not have any methods to measure Portal visitors' satisfaction and whether or not they feel welcome and end up visiting the page again or regularly.</p>
-
 </div>
+
+<p style = "text-align: center;">
+  { <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/deployments/index.Rmd">RMarkdown Source</a> |
+  <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/deployments/figures">Figures</a> |
+  <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Deployments%20Over%20Time">Analysis Codebase</a> |
+  <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/Analyses/Deployments%20Over%20Time/report.pdf">Download PDF</a> }
+</p>
 
 ## Background
 
@@ -81,9 +88,11 @@ Sessions last at least 15 minutes. The timer starts counting down from the user'
 
 Where applicable, we used generalized additive model (GAM) spline-based smoothing to fit a smooth curve to the data to visualize overall, longer-term patterns. Specifically, we used the `s()` function in the **mgcv** R package, with a 4- and 5-dimensional basis for the smooth term (`y ~ s(x, k = 4)` & `y ~ s(x, k = 5)`) in majority of the graphs.
 
+### Pageviews
+
 ![**Figure 3**: Pageviews over time with (`k = 20`) smoothing curves overlaid to see underlying trends. Pageviews to English, German, French, and Russian Wikipedias are provided for reference. We were too late to start looking into the April spike, as that webrequest data was purged by the time we started the analysis. The only notable thing in this figure is the rise in <span style = "color: #E76BF3;">pageviews</span> following the Detect Language deployment, which may or may not be caused by it along with increased publicity.](figures/pageviews.png)
 
-<hr style = "border-color: #C0C0C0; width: 85%;">
+### Sessions
 
 ![**Figure 4**: Number of unique sessions and visits over time (in <span style = "color: black;">black</span>). The <span style = "color: #E41A1C;">red, dashed smoothing curve</span> (`k = 20`) is closer to the data while the <span style = "color: #377EB8;">solid blue curve</span> (`k = 11`) shows a more general trend. Comparing raw counts of sessions and visits is not completely correct in this case because the way the sampling was done did not completely follow the 1 in 200 rule we initially thought it would. However, an interesting thing to note is that after the release of the language dropdown A/B test and new, more reliable "seeded" sampling method (13 May 2016), we are seeing very stable counts of sessions and visits (see T135558).](figures/daily_aggregates.png)
 
@@ -91,7 +100,7 @@ Where applicable, we used generalized additive model (GAM) spline-based smoothin
 
 ![**Figure 5**: There is one particular aspects of this graph that is very interesting to us: the increase in <span style = "color: #F8766D;">the proportion of non-US sessions</span> -- almost consistently above 50% from May 2016 and onward. Perhaps our Global South efforts have helped increase knowledge of Wikipedia and its projects!](figures/daily_aggregates_us.png)
 
-<hr style = "border-color: #C0C0C0; width: 85%;">
+### Clickthroughs
 
 ![**Figure 6**: There are 2 GAM-smoothed curves overlayed on the clickthrough (CTR) series: <span style = "color: #E41A1C;">a red, dashed one that more closely resembles the data</span> and <span style = "color: #377EB8;">a blue one that shows us a more general trend</span>. We can see that after the release of the search box, the proportion of sessions with at least one clickthrough has been rather stable with weekly seasonality. The deployments have not moved the general engagement up or down by a noticeable amount. We're still not sure why Saturday of all days seems to be the day where CTR is at its lowest.](figures/ctr.png)
 
@@ -99,7 +108,7 @@ Where applicable, we used generalized additive model (GAM) spline-based smoothin
 
 ![**Figure 7**: Likewise, when we look at "last action taken" metric -- the one seen on the Portal dashboard -- we see a slight increase over time in the proportion of sessions where a click on <span style = "color: #00BF7D;">"primary links"</span> was the last action performed. "No action"s have decreased up to the point of the search box release and then remained stable with weekly seasonality.](figures/action_breakdown.png)
 
-<hr style = "border-color: #C0C0C0; width: 85%;">
+### Most Commonly Clicked Section
 
 In Figures 8 and 9 below, we use the "most common section clicked per visit" metric. When the user goes to the Wikipedia.org Portal and gets enrolled into event logging by our random sampling mechanism, they have a tracker that stays alive for at least 15 minutes, with the expiration timer renewing every time the user visits the page within the 15 minute window. Furthermore, on each visit to the page, the visitor can click on any link as many times as they want and open as many tabs to different wikis as they want. This means that for any one page landing event (visit), we can see dozens (and even hundreds!) of clickthrough events, and that each session can consist of dozens (and even hundreds!) of visits. While the graph above uses the "last action taken" metric, the graphs below allow us to see how the most clicked section per visit varies over time.
 
