@@ -20,3 +20,7 @@ vignettes/*.pdf
 
 *.csv
 .Rproj.user
+
+Analyses/Pageviews Rise/figures/top10.pdf
+
+*.tsv
