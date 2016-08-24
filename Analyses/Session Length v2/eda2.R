@@ -1,8 +1,26 @@
 ###
-# User Agents(OS, Device, Browser)
+# User Agents(OS, Browser)
+# (UA parser generated a nasty list of device)
 ###
 
+# Mobile tag
+mobile_os <- c("Android","iOS","Windows Phone","BlackBerry OS")
+sessions$mobile <- sessions$os %in% mobile_os
+
+sessions %>%
+group_by(mobile) %>%
+summarize(clickthrough = sum(clickthrough), ctr = sum(clickthrough)/n(), n = n())
+
 ### Session Length
+
+{ ggplot(keep_where(sessions, session_length > 0)) +
+  geom_density(aes(x = session_length, fill = mobile), alpha = 0.5) +
+  scale_fill_brewer(type = "qual", palette = "Set1") +
+  scale_x_logtime(name = "Session Length") +
+  ggtitle("Session lengths by Mobile OS",
+          subtitle = "267K unique sessions from June and July 2016") +
+  theme(legend.position = "bottom")} %>%
+  ggsave("session_length_mobile.png", ., path = "figures", width = 8, height = 6, units = "in", dpi = 300)
 
 top_os <- sessions %>%
 group_by(os) %>%
@@ -166,6 +184,16 @@ ggsave("survival_by_browser.png", p, path = "figures", width = 16, height = 12, 
 
 
 ### Time to first click from first visit
+
+{ ggplot(keep_where(sessions, secs_to_first_click > 0)) +
+  geom_density(aes(x = secs_to_first_click, fill = mobile), alpha = 0.5) +
+  scale_fill_brewer(type = "qual", palette = "Set1") +
+  scale_x_logtime(name = "Time") +
+  ggtitle("Time to first clickthrough from initial landing by Mobile OS",
+          subtitle = "242K unique sessions from June and July 2016") +
+  theme(legend.position = "bottom")} %>%
+  ggsave("first_clickthrough_mobile.png", ., path = "figures", width = 8, height = 6, units = "in", dpi = 300)
+
 
 top_os <- sessions %>%
 group_by(os) %>%

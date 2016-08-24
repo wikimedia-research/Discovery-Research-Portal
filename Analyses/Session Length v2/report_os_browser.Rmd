@@ -1,0 +1,51 @@
+---
+title: "Report on Wikipedia Portal Visitors"
+author: "Chelsy Xie (Analysis & Report)"
+date: "23 August 2016"
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 7
+    fig_width: 5
+    includes:
+      in_header: header.tex
+    latex_engine: xelatex
+  html_document: default
+geometry: margin=1in
+subtitle: A Look At Session Lengths by OS and Browser
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+\renewcommand{\abstractname}{Executive Summary}
+\begin{abstract}
+This report takes a further step from the previous one to investigate the difference between OS and browsers. While most sessions are within 1 min, some os/browsers tend to take longer. In the mean time, mobile devices have a longer session length, and take longer to first click through.
+\end{abstract}
+
+## Data
+
+The event logging (EL) data was extracted from the database using the script [data.R](https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/Analyses/Session%20Length%20v2/data.R) and refined into sessions using [refine.R](https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/Analyses/Session%20Length%20v2/refine.R).
+
+Throughout the report "session length" is calculated as the arithmetic difference between the last recorded event and the first recorded event from a user, uniquely identified by a combination of: session ID, user agent, and language preferences. These are used in tandem to correct for possible session ID clashes.
+
+The user agents are parsed by [ua-parser](https://github.com/ua-parser/uap-r). The device are parsed wrongly, so here we only analyze os and browser. Additionally, if the os of a session is Android, iOS, Windows Phone or BlackBerry OS, we tag it as a mobile session.
+
+\newpage
+
+## Results
+
+![Most sessions are less than 1 min. Some sessions of Linux, Ubuntu and Windows XP last 10-15 min.](figures/session_length_by_os.png)
+
+![Sessions using Android browser has a more spread out distribution: there are more sessions that last longer.](figures/session_length_by_browser.png)
+
+![Kindle sessions are very high on median first visit session length and median session length. However, since we only have 36 kindle sessions in these two month, we need to gather more data before drawing a conclusion. Also notice that Ubuntu and BlackBerry OS are high on median session length, but not that extreme on median first visit session length, we suspect that they may revisit the portal multiple times in a session.](figures/session_lengths_medians_by_os.png)
+
+![Median first visit session length, median session length, and median time to first click from initial landing by browser.](figures/session_lengths_medians_by_browser.png)
+
+![Mobile sessions last slightly longer than others, and don't see a second peak aroung 15 min.](figures/session_length_mobile.png)
+
+![It takes longer for mobile sessions to first click through from initial landing.](figures/first_clickthrough_mobile.png)
+
