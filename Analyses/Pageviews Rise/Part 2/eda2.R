@@ -60,3 +60,47 @@ webrequest_counts <- as.data.table(dplyr::filter(readr::read_tsv("data/portal_we
   ggtitle("Cumulative density histogram of Wikipedia.org Portal PVs on 17 Aug 2016",
           subtitle = "99.58% of the IPs have <100 PVs per day")
 } %>% ggsave("distribution.png", plot = ., path = "figures", width = 12, height = 6, dpi = 150)
+
+library(plotly) # install.packages("plotly")
+
+plot_ly(x = webrequest_counts$pageviews, type = "histogram",
+        font_family = "Open Sans") %>%
+  layout(title = "Distribution of Wikipedia.org PVs Per IP Address on 17 Aug 2016",
+         titlefont = list(
+           family = "Open Sans, sans-serif",
+           size = 14
+         ),
+         xaxis = list(
+           title = "Pageviews from an IP address",
+           titlefont = list(
+             family = "Open Sans, sans-serif",
+             size = 12
+           ),
+           type = "log",
+           range = c(0, 5)),
+         yaxis = list(
+           title = "Number of IP addresses",
+           titlefont = list(
+             family = "Open Sans, sans-serif",
+             size = 12
+           )
+         )) %>%
+  plotly_POST(filename = "wikipedia-portal-pageviews-histogram", sharing = "public")
+
+thresholds <- c(10, 100, 250, 500, 750, 1e3, 2e3, 5e3, 1e4, 1.5e4, 2e4, 4e4, 5e4)
+dplyr::data_frame(threshold = polloi::compress(thresholds, 2),
+                  `% of IPs with pageviews <= threshold` = vapply(thresholds, function(threshold) {
+                    return(sprintf("%.5f%%", 100 * sum(webrequest_counts$pageviews <= threshold)/length(webrequest_counts$pageviews)))
+                  }, ""),
+                  `low-volume client PVs` = vapply(thresholds, function(threshold) {
+                    return(polloi::compress(sum(webrequest_counts$pageviews[webrequest_counts$pageviews <= threshold]), 3))
+                  }, ""),
+                  `proportion of total PVs accounted for by low-volume clients` = vapply(thresholds, function(threshold) {
+                    return(sprintf("%.2f%%", 100 * sum(webrequest_counts$pageviews[webrequest_counts$pageviews <= threshold]) / sum(webrequest_counts$pageviews)))
+                  }, ""),
+                  `high-volume client PVs` = vapply(thresholds, function(threshold) {
+                    return(polloi::compress(sum(webrequest_counts$pageviews[webrequest_counts$pageviews > threshold]), 3))
+                  }, ""),
+                  `proportion of total PVs accounted for by high-volume clients` = vapply(thresholds, function(threshold) {
+                    return(sprintf("%.2f%%", 100 * sum(webrequest_counts$pageviews[webrequest_counts$pageviews > threshold]) / sum(webrequest_counts$pageviews)))
+                  }, "")) %>% knitr::kable("markdown", align = c("l", "r", "r", "r", "r", "r"))
