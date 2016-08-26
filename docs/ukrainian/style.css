@@ -1,0 +1,47 @@
+body {
+  padding-bottom: 0.5in;
+}
+
+#header {
+  text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Gill Sans", sans-serif;
+}
+
+p.caption {
+  font-family: "Gill Sans", sans-serif;
+  font-size: small;
+  padding: 0.15in 10% 0 10%;
+  text-align: left;
+}
+
+div.figure {
+  text-align: center;
+  margin: 0.25in 0;
+}
+
+div#abstract {
+  padding: 0.1in 1in;
+  font-size: small;
+  text-align: center;
+}
+
+div#abstract h2 {
+  font-size: medium;
+}
+
+div#abstract p {
+  text-align: left;
+}
+
+.figure-left {
+  float: left;
+  margin-right: 0.25in;
+}
+
+.figure-right {
+  float: right;
+  margin-left: 0.25in;
+}

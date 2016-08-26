@@ -1,0 +1,9 @@
+# Visits to Ukrainian Wikipedia from Wikipedia.org Portal
+
+This sub-repo is the analysis & report codebase for [T143853](https://phabricator.wikimedia.org/T143853) wherein we investigate if the recent "[link collapse](https://www.mediawiki.org/wiki/Wikipedia.org_updated_page_layout)" [deployment](https://phabricator.wikimedia.org/T140153) had a negative effect on [Ukrainian Wikipedia](https://uk.wikipedia.org/wiki/%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%BD%D0%B0_%D1%81%D1%82%D0%BE%D1%80%D1%96%D0%BD%D0%BA%D0%B0) [pageviews](https://tools.wmflabs.org/siteviews/?platform=all-access&source=pageviews&agent=user&range=latest-90&sites=uk.wikipedia.org).
+
+The report will be accessible online [here](wikimedia-research.github.io/Discovery-Research-Portal/ukrainian/) and a PDF copy will be uploaded to Commons.
+
+## References and Additional Links
+
+- [Wikipedia.org Portal dashboard with Ukranian selected](http://discovery.wmflabs.org/portal/?s_enwiki=T&smoothing_pageviews=global&ss-net-opt-websocket=T&ss-net-opt-iframe-eventsource=T&s_type=count&lv_response=users&smoothing_browser_breakdown=global&smoothing_country_breakdown=global&ss-net-opt-iframe-xhr-polling=T&ss-net-opt-xdr-streaming=T&browser_order=growth&lv_languages=Ukrainian&group_browsers=F&hide_more_than_15=F&browser_grouping=family&smoothing_first_visit=global&lv_sort=alphabet_az&pageview_logscale=F&smoothing_dwelltime=global&s_response=clicks&s_logscale=F&lv_combine=F&smoothing_most_common=global&smoothing_action_breakdown=global&ss-net-opt-jsonp-polling=T&ss-net-opt-xhr-polling=T&smoothing_referer_summary=global&smoothing_search_engines=global&smoothing_global=day&hide_less_than_5=F&lv_type=count&ss-net-opt-iframe-htmlfile=T&smoothing_lv=global&ss-net-opt-xhr-streaming=T&smoothing_summary=global&browser_filter=&group_us_regions=F&lv_logscale=F&smoothing_clickthrough_rate=global&ss-net-opt-xdr-polling=T) (go to Languages > "Languages visited" panel)

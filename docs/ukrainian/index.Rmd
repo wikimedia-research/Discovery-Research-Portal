@@ -1,0 +1,38 @@
+---
+title: "Wikipedia.org Portal and Ukrainian Wikipedia"
+author:
+- Mikhail Popov (Analysis & Report)
+- Deborah Tankersley (Product Management)
+date: "25 August 2016"
+output:
+  html_document:
+    css: style.css
+    fig_caption: yes
+    self_contained: no
+    theme: cosmo
+    mathjax: null
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+geometry: margin=1in
+fontsize: 12pt
+---
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+<div id = "abstract">
+<h2>Executive Summary</h2>
+<p>...</p>
+</div>
+
+<p style = "text-align: center;">
+  { <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> |
+  <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> |
+  <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> |
+  Download PDF }
+</p>
+
+## Background
+
+...
