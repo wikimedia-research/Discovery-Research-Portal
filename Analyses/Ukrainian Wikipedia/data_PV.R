@@ -79,3 +79,4 @@ q(save = "no")
 
 # Locally
 # system2("scp", c("stat2:/home/bearloga/pageview_counts_portal-ukwiki_20160805-20160825.tsv", "data/"))
+# system2("scp", c("stat2:/home/bearloga/pageview_counts_portal-ukwiki_20160629-20160828.tsv", "data/"))
