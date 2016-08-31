@@ -1,6 +1,6 @@
-start_date <- Sys.Date() - 61
+start_date <- Sys.Date() - 1 # Sys.Date() - 61
 end_date <- Sys.Date() - 1
-pageviews <- data.table::as.data.table(do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
+pageviews <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
   cat("Fetching pageview counts from", as.character(date, "%d %B %Y"), "\n")
   query <- paste0("ADD JAR /home/bearloga/Code/analytics-refinery-jars/refinery-hive.jar;
                   CREATE TEMPORARY FUNCTION is_external_search AS
@@ -61,19 +61,21 @@ pageviews <- data.table::as.data.table(do.call(rbind, lapply(seq(start_date, end
                                                        "from_wikipedia_portal", "from_search_redirect")]
   # Finish:
   return(results)
-})))
+}))
 
 pageviews$post_deployment <- pageviews$date >= "2016-08-16"
 
 pageviews <- pageviews[order(pageviews$date, pageviews$project, pageviews$prefix, pageviews$access_method, pageviews$referer_class, pageviews$from_wikipedia_portal, pageviews$from_search_redirect, pageviews$search_engine), ]
 
-readr::write_tsv(
-  pageviews,
-  paste0("~/pageview_counts_portal-ukwiki_",
-         as.character(start_date, "%Y%m%d"), "-",
-         as.character(end_date, "%Y%m%d"),
-         ".tsv")
-)
+# readr::write_tsv(
+#   pageviews,
+#   paste0("~/pageview_counts_portal-ukwiki_",
+#          as.character(start_date, "%Y%m%d"), "-",
+#          as.character(end_date, "%Y%m%d"),
+#          ".tsv")
+# )
+
+readr::write_tsv(pageviews, "pageview_counts_portal-ukwiki_20160629-20160828.tsv", append = TRUE)
 
 q(save = "no")
 

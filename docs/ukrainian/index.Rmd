@@ -19,7 +19,12 @@ geometry: margin=1in
 fontsize: 12pt
 ---
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.path = "figures")
+library(data.table)
+library(bsts)
+library(magrittr)
+library(ggplot2)
+library(dygraphs)
 ```
 <div id = "abstract">
 <h2>Executive Summary</h2>
@@ -36,3 +41,32 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ## Background
 
 ...
+
+## Methods
+
+## Results
+
+```{r load_bsts_data}
+if (grepl("Analyses/Ukrainian Wikipedia", getwd(), fixed = TRUE)) {
+  load("data/bsts.RData")
+} else {
+  load("../../Analyses/Ukrainian Wikipedia/data/bsts.RData")
+}
+```
+
+```{r models_summary, fig.cap = 'Summary metrics for top models. Of the 6 models, deployment only had a statistically significant effect in one (which used pageviews to Russian Wikipedia from Wikipedia.org Portal and pageviews to Ukrainian Wikipedia from elsewhere). The effect was negative in the other models too, but not statistically significant (95% credible interval included 0).'}
+quantiles <- matrix(0.0, nrow = 6, ncol = 6)
+rownames(quantiles) <- names(model_list)[c(3, 4, 6, 7, 8, 9)]
+for (model_name in names(model_list)[c(3, 4, 6, 7, 8, 9)]) {
+  quantiles[model_name, 4:6] <- quantile(model_list[[model_name]]$coefficients[-(1:burn_in), "post_deployment"], c(0.025, 0.5, 0.975))
+  quantiles[model_name, 1] <- summary(model_list[[model_name]], burn = burn_in)$rsquare
+  quantiles[model_name, 2] <- AIC(model_list[[model_name]])
+  quantiles[model_name, 3] <- BIC(model_list[[model_name]])
+}; rm(model_name)
+colnames(quantiles) <- c("R2", "AIC", "BIC", "Lower95", "Estimate", "Upper95")
+rownames(quantiles) <- sub(", AR + seasonality", "", rownames(quantiles), fixed = TRUE)
+quantiles <- as.data.frame(quantiles)
+quantiles$`95% Credible Interval` = sprintf("(%.2f, %.2f)", quantiles$Lower95, quantiles$Upper95)
+quantiles$Lower95 <- NULL; quantiles$Upper95 <- NULL
+knitr::kable(quantiles, format = "markdown", digits = 3, align = c("r", "r", "r", "r", "c"))
+```

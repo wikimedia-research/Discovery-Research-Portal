@@ -1,0 +1,21 @@
+.htmlwidget_container {
+  background: #FF00;
+}
+
+.dygraph-legend {
+  background: transparent !important;
+  left: 100px !important;
+}
+
+.dygraph-legend, .dygraph-label {
+  color: #ECF0F5;
+}
+
+body, .dygraph-label {
+  background-color: #222D32 !important;
+  color: #ECF0F5;
+}
+
+.dygraph-axis-label {
+  color: #ECF0F5;
+}

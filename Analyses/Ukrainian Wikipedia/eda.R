@@ -3,7 +3,8 @@ library(data.table)
 library(magrittr)
 library(ggplot2)
 
-pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160805-20160825.tsv", col_types = "Dccccclllil")
+# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160805-20160825.tsv", col_types = "Dccccclllil")
+pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160629-20160828.tsv", col_types = "Dccccclllil")
 pageviews <- dplyr::left_join(pageviews, polloi::get_prefixes()[, c("language", "prefix")], by = "prefix")
 pageviews <- as.data.table(pageviews)
 
