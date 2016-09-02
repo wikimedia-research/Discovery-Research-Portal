@@ -8,14 +8,14 @@
 }
 
 .dygraph-legend, .dygraph-label {
-  color: #ECF0F5;
+  color: black;
 }
 
-body, .dygraph-label {
-  background-color: #222D32 !important;
-  color: #ECF0F5;
+.dygraph-label {
+  background-color: black !important;
+  color: white;
 }
 
 .dygraph-axis-label {
-  color: #ECF0F5;
+  color: white;
 }

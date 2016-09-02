@@ -3,28 +3,34 @@ title: "Wikipedia.org Portal and Ukrainian Wikipedia"
 author:
 - Mikhail Popov (Analysis & Report)
 - Deborah Tankersley (Product Management)
-date: "25 August 2016"
+date: "2 September 2016"
 output:
-  html_document:
+  rmdformats::readthedown:
+    highlight: kate
     css: style.css
     fig_caption: yes
     self_contained: no
-    theme: cosmo
     mathjax: null
-    toc: true
-    toc_float:
-      collapsed: false
-      smooth_scroll: true
 geometry: margin=1in
 fontsize: 12pt
 ---
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.path = "figures")
+library(rmdformats) # https://github.com/juba/rmdformats
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.path = "figures/")
+knitr::opts_knit$set(width = 75)
+options(max.print = "75")
 library(data.table)
 library(bsts)
 library(magrittr)
 library(ggplot2)
 library(dygraphs)
+path <- function(x) {
+  if (grepl("Analyses/Ukrainian Wikipedia", getwd(), fixed = TRUE)) {
+    return(x)
+  } else {
+    file.path("../../Analyses/Ukrainian Wikipedia", x)
+  }
+}
 ```
 <div id = "abstract">
 <h2>Executive Summary</h2>
@@ -35,38 +41,124 @@ library(dygraphs)
   { <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> |
   <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> |
   <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> |
+  <a href="https://phabricator.wikimedia.org/T143853">Phabricator Task</a> |
   Download PDF }
 </p>
 
 ## Background
 
-...
+For the past several months, Discovery's Wikipedia.org Portal team has been working on redesigning the ([wikipedia.org](https://wikipedia.org)) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the [final major patch](https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0) (for the next foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the "Read in your language" button (see Figure [1a](figures/portal_a.png) and [1b](figures/portal_b.png) below).
+
+<div><div style = "float: left; width: 31%; margin-right: 2%"><a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting Wikipedia.org Portal with Russian as the preferred language."></a><p class = "caption">Figure 1 (a): Default experience when visiting Wikipedia.org Portal with Russian as the preferred language. Our deployment on August 16th, 2016, collapsed the language links into a hidden-by-default modal in an effort to make the page's design cleaner and less overwhelming to new visitors.</p></div><div style = "float: left; width: 31%; margin-left: 2%"><a href = "figures/portal_b.png"><img src = "figures/portal_b.png" alt = 'Figure 1 (b): Link to Ukrainian Wikipedia is only visible by clicking the "Read in your language" button to reveal the modal containing links to Wikipedia in various languages.'></a><p class = "caption">Figure 1 (b): Link to Ukrainian Wikipedia is only visible by clicking the "Read in your language" button to reveal the modal containing links to Wikipedia in various languages.</p></div><div style = "float: left; width: 31%; margin-left: 2%"><a href = "figures/portal_c.png"><img src = "figures/portal_c.png" alt = "Figure 1 (c): How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe."></a><p class = "caption">Figure 1 (c): How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe.</p></div></div><div style = "clear:left;"></div>
+
+Per [some comments in a thread on mediawiki.org](https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy), there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users browsers being configured to Russian, thereby burying the link to the [Ukrainian Wikipedia](https://uk.wikipedia.org/) (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia's [main page](https://uk.wikipedia.org/wiki/Головна_сторінка) from Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.
+
+![Figure 1: Pageviews to Russian, Ukrainian, Crimean Tatar, and German Wikipedias from various sources (direct, search engine, elsewhere, and Wikipedia.org Portal). Languages chosen via [Languages of Ukraine](https://en.wikipedia.org/wiki/Languages_of_Ukraine). ([Full resolution version](figures/pageviews_no-enwiki.png).)](figures/pageviews_no-enwiki.png)
 
 ## Methods
 
-## Results
-
 ```{r load_bsts_data}
-if (grepl("Analyses/Ukrainian Wikipedia", getwd(), fixed = TRUE)) {
-  load("data/bsts.RData")
-} else {
-  load("../../Analyses/Ukrainian Wikipedia/data/bsts.RData")
-}
+load(path("data/bsts.RData"))
+```
+We used [Bayesian structural time series](https://en.wikipedia.org/wiki/Bayesian_structural_time_series) (BSTS) to model Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal, using the R package "bsts" (Scott et al., 2016). See [[1]](http://doi.org/10.1504/ijmmno.2014.059942), [[2]](http://doi.org/10.1214/14-AOAS788), and [[7]](https://CRAN.R-project.org/package=bsts) for more details. 
+
+We tried multiple models, including different combinations of:
+
+- seasonality (weekly & monthly) components,
+- a [one-back autoregressive](https://en.wikipedia.org/wiki/Autoregressive_model) (AR1) component,
+- specific pageview time series as control time series (e.g. Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews _not_ from Wikipedia.org Portal),
+- [dynamic time warping-matched](https://en.wikipedia.org/wiki/Dynamic_time_warping) pageview time series ("markets") as control time series, such as Russian Wikibooks pageviews from elsewhere (not direct, from Wikipedia.org Portal, not from Google/Bing/Yahoo/Yandex/DuckDuckGo, and not from a Wikimedia site/tool/bot) which had the highest similarity, and
+- a "mix of markets" that included similar markets and markets with the [highest posterior inclusion probability](http://google.github.io/CausalImpact/CausalImpact.html#which-predictor-variables-were-used-in-the-model) via [Bayesian variable selection](http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/#bayesian-variable-selection).
+
+When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set $Z_t = \beta^T X_t$ and $\alpha_t = 1$, so that each $p$-th covariate had a coefficient $\beta_p$. All models included an indicator variable $x_{\text{deployment},t}$ of Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that $x_{\text{deployment},t} = 0$ when $t$ is before 16 August 2016, and $x_{\text{deployment},t} = 1$ when $t$ is 16 August 2016 or after, so that $\beta_{\text{deployment}}$ is the effect of the deployment on Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal after accounting for variance in pageviews using various control time series.
+
+```{r bsts_aggregate_state_contribution_plots, fig.height = 20, fig.width = 12, fig.cap = "Figure 2: Plots of the 15 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison."}
+par(mfrow = c(5, 3))
+for (model_name in names(model_list)) {
+  plot(model_list[[model_name]], "state", main = model_name, ylim = c(400, 900))
+}; par(mfrow = c(1, 1))
 ```
 
-```{r models_summary, fig.cap = 'Summary metrics for top models. Of the 6 models, deployment only had a statistically significant effect in one (which used pageviews to Russian Wikipedia from Wikipedia.org Portal and pageviews to Ukrainian Wikipedia from elsewhere). The effect was negative in the other models too, but not statistically significant (95% credible interval included 0).'}
-quantiles <- matrix(0.0, nrow = 6, ncol = 6)
-rownames(quantiles) <- names(model_list)[c(3, 4, 6, 7, 8, 9)]
-for (model_name in names(model_list)[c(3, 4, 6, 7, 8, 9)]) {
+Fifteen different models were considered (see Figure 2) and nine were chosen according to a mix of visual inspection of the predictions, the models' [R<sup>2</sup>](https://en.wikipedia.org/wiki/Coefficient_of_determination) (proportion by which the residual variance is less than the variance of the original observations), and cumulative absolute error (see Figure 3).
+
+<p class = "caption">Figure 3 (below, interactive): Cumulative absolute error over time by model. ([Non-interactive version.](figures/cumulative_absolute_error.png)).</p>
+
+```{r prediction_error_dygraph, fig.width = 8, fig.height = 4}
+colours <- c("#00b769", "#d354be", "#436a00", "#0047a7", "#ffac3e", "#00dfe0", "#e5356f", "#01845d", "#ff8c80", "#ad5700")
+# ^ made with http://tools.medialab.sciences-po.fr/iwanthue/
+# Settings:
+# - Color space is 'colorblind friendly'
+# - 10 colors
+# - hard (force vector) instead of k-means
+prediction_errors %>%
+  { .[c(names(sort(tail(., 1)[, c(3, 4, 6, 7, 8, 9, 13, 14, 15)], decreasing = TRUE)), "Date")] } %>%
+  { xts::xts(.[, 1:(ncol(.)-1)], order.by = .$Date) } %>%
+  dygraph(main = "Comparison of BSTS Models", ylab = "Cumulative Absolute Error", xlab = "Date") %>%
+  dyOptions(colors = colours, labelsKMB = TRUE) %>%
+  dyLegend(labelsSeparateLines = TRUE, labelsDiv = "prediction_error_legend", show = "always") %>%
+  dyRangeSelector(fillColor = "gray40", strokeColor = "black") # %>% dyCSS(path("dygraph.css"))
+```
+
+<div id = "prediction_error_legend"></div>
+
+## Results
+
+```{r best_markets}
+market_match$BestMatches %>%
+  dplyr::filter(source == "ukrainian wikipedia (main page) from Wikipedia.org Portal") %>%
+  dplyr::select(BestControl, RelativeDistance, Correlation) %>%
+  dplyr::rename(Control = BestControl,
+                Distance = RelativeDistance) %>%
+  knitr::kable(format = "markdown", digits = 3)
+```
+
+<p class = "caption">Table 1: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal.</p>
+
+```{r selected_models_summary}
+quantiles <- matrix(0.0, nrow = 9, ncol = 6)
+rownames(quantiles) <- names(model_list)[c(3, 4, 6, 7, 8, 9, 13, 14, 15)]
+for (model_name in names(model_list)[c(3, 4, 6, 7, 8, 9, 13, 14, 15)]) {
   quantiles[model_name, 4:6] <- quantile(model_list[[model_name]]$coefficients[-(1:burn_in), "post_deployment"], c(0.025, 0.5, 0.975))
   quantiles[model_name, 1] <- summary(model_list[[model_name]], burn = burn_in)$rsquare
   quantiles[model_name, 2] <- AIC(model_list[[model_name]])
   quantiles[model_name, 3] <- BIC(model_list[[model_name]])
 }; rm(model_name)
-colnames(quantiles) <- c("R2", "AIC", "BIC", "Lower95", "Estimate", "Upper95")
+colnames(quantiles) <- c("R²", "AIC", "BIC", "Lower95", "Estimate", "Upper95")
 rownames(quantiles) <- sub(", AR + seasonality", "", rownames(quantiles), fixed = TRUE)
 quantiles <- as.data.frame(quantiles)
-quantiles$`95% Credible Interval` = sprintf("(%.2f, %.2f)", quantiles$Lower95, quantiles$Upper95)
+quantiles$`Model Nickname` <- rownames(quantiles)
+quantiles$`95% CI` = sprintf("(%.2f, %.2f)", quantiles$Lower95, quantiles$Upper95)
 quantiles$Lower95 <- NULL; quantiles$Upper95 <- NULL
-knitr::kable(quantiles, format = "markdown", digits = 3, align = c("r", "r", "r", "r", "c"))
+quantiles <- quantiles[order(quantiles$`R²`, quantiles$BIC, decreasing = c(TRUE, FALSE)),
+                       c("Model Nickname", "R²", "AIC", "BIC", "Estimate", "95% CI")]
+rownames(quantiles) <- 1:nrow(quantiles)
+knitr::kable(quantiles, format = "markdown", digits = 3, align = c("l", "r", "r", "r", "r", "c"), row.names = TRUE)
+```
+
+<div class = "caption">Table 2: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate & 95% credible interval of the effect of Wikipedia.org Portal's secondary link collapse patch deployment from the top 9 BSTS models we looked at: <ol class = "caption"><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots, Russian Wikibooks from elsewhere (not direct, from a search engine/Portal/Wikimedia), Ukrainian Wiktionary pageviews from a search engine as control time series.</li><li>Using Ukrainian Wikipedia pageviews from Wikimedia stiates/tools/bots as a control time series.</li><li>Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as a control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal as a control time series.</li><li>Using the 20 top market matches (see Table 1) as control time series, with elevated prior inclusion probabilities for certain "markets" like Russian Wikipedia pageviews from Wikipedia.org Portal.</li><li>Not using any pageview counts as a control time series.</li><li>Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal and Russian Wikibooks pageviews from elsewhere (not direct, from a search engine/Portal/Wikimedia) as control time series.</li></ol></div>
+
+In Table 2 above, we list the top 9 models we chose and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as "there is a 95% probability that the true value of the effect is inside this interval". The effect of the deployment was estimated to be negative, but not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have sufficient evidence to say that the deployment had a positive or a negative effect on Ukrainian Wikipedia's main page pageviews from Wikipedia.org Portal. Furthermore, if we _were_ to set aside the statistical insignificance, the point estimate of the decrease in pageviews due to deployment was between 11 and 56 pageviews across the models, which is not a particularly high number of pageviews lost. Specifically, the effect of the deployment was estimated by the best model (No. 1, where we used Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as covariates) to be ~30 pageviews on a daily basis, although this estimate is not statistically significant.
+
+## References
+
+### Reading
+
+1. Scott, S. L., & Varian, H. R. (2014). Predicting the present with bayesian structural time series. International Journal of Mathematical Modelling and Numerical Optimisation, 5(1/2), 4. http://doi.org/10.1504/ijmmno.2014.059942
+2. Brodersen, K. H., Gallusser, F., & Koehler, J. (2015). Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics. http://doi.org/10.1214/14-AOAS788, http://research.google.com/pubs/pub41854.html
+3. Larsen, K. (2016, January 13). Making Causal Impact Analysis Easy [Blog post]. Retrieved from http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/
+4. Larsen, K. (2016, April 21). Sorry ARIMA, but I’m Going Bayesian [Blog post]. Retrieved from http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/
+
+### Software
+
+```{r packages_refs, results = 'asis'}
+c("base", "data.table", "bsts", "dtw", "MarketMatching", "magrittr", "ggplot2", "dygraphs", "rmarkdown", "knitr") %>%
+  lapply(function(pkg) { return(format(citation(package = pkg), "text")) }) %>%
+  unlist %>%
+  {
+    paste0((1:length(.)) + 4, ". ", .)
+  } %>%
+  paste(collapse = "\n") %>%
+  gsub("<URL:", "", ., fixed = TRUE) %>%
+  gsub(">.", "", ., fixed = TRUE) %>%
+  cat
 ```

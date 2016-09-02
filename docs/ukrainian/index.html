@@ -8,70 +8,27 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
-
 <meta name="author" content="Mikhail Popov (Analysis &amp; Report)" />
 <meta name="author" content="Deborah Tankersley (Product Management)" />
 
-<meta name="date" content="2016-08-25" />
+<meta name="date" content="2016-08-31" />
 
 <title>Wikipedia.org Portal and Ukrainian Wikipedia</title>
 
 <script src="index_files/jquery-1.11.3/jquery.min.js"></script>
-<script src="index_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="index_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="index_files/tocify-1.9.1/jquery.tocify.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="index_files/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
-<script src="index_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
-<script src="index_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
-<script src="index_files/bootstrap-3.3.5/shim/respond.min.js"></script>
-
-<style type="text/css">code{white-space: pre;}</style>
-<link rel="stylesheet"
-      href="index_files/highlight/default.css"
-      type="text/css" />
-<script src="index_files/highlight/highlight.js"></script>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
-<script type="text/javascript">
-if (window.hljs && document.readyState && document.readyState === "complete") {
-   window.setTimeout(function() {
-      hljs.initHighlighting();
-   }, 0);
-}
-</script>
+<link href="index_files/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+<script src="index_files/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+<link href="index_files/readthedown-0.1/readthedown.css" rel="stylesheet" />
+<script src="index_files/readthedown-0.1/readthedown.js"></script>
+<script src="index_files/htmlwidgets-0.7/htmlwidgets.js"></script>
+<link href="index_files/dygraphs-1.1.1/dygraph.css" rel="stylesheet" />
+<script src="index_files/dygraphs-1.1.1/dygraph-combined.js"></script>
+<script src="index_files/moment-2.8.4/moment.js"></script>
+<script src="index_files/moment-timezone-0.2.5/moment-timezone-with-data.js"></script>
+<script src="index_files/dygraphs-binding-1.1.1.2/dygraphs.js"></script>
 
 
-
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 
@@ -79,159 +36,31 @@ h6 {
 
 <body>
 
-<style type = "text/css">
-.main-container {
-  max-width: 940px;
-  margin-left: auto;
-  margin-right: auto;
-}
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-img {
-  max-width:100%;
-  height: auto;
-}
-.tabbed-pane {
-  padding-top: 12px;
-}
-button.code-folding-btn:focus {
-  outline: none;
-}
-</style>
 
+<div id="content" data-toggle="wy-nav-shift">
 
-<div class="container-fluid main-container">
+<nav id="nav-top" role="navigation" aria-label="top navigation">
+    <a role="button" href="#" data-toggle="wy-nav-top"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+</nav>
 
-<!-- tabsets -->
-<script src="index_files/navigation-1.1/tabsets.js"></script>
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
-
-<!-- code folding -->
-
-
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
-
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.9em;
-  padding-left: 5px;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-  padding-left: 10px;
-}
-
-</style>
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
-
-
-
-
-<div class="fluid-row" id="header">
-
-
-
-<h1 class="title toc-ignore">Wikipedia.org Portal and Ukrainian Wikipedia</h1>
-<h4 class="author"><em>Mikhail Popov (Analysis &amp; Report)</em></h4>
-<h4 class="author"><em>Deborah Tankersley (Product Management)</em></h4>
-<h4 class="date"><em>25 August 2016</em></h4>
-
+<div id="header">
+<h1 class="title">Wikipedia.org Portal and Ukrainian Wikipedia</h1>
 </div>
 
 
+<div id="table-of-contents">
+    <h2><a href="#content">Wikipedia.org Portal and Ukrainian Wikipedia</a></h2>
+    <div id="text-table-of-contents">
+      <ul>
+      <li><a href="#background">Background</a></li>
+      <li><a href="#methods">Methods</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#references">References</a></li>
+      </ul>  
+    </div>
+</div>
+
+<div id="main">
 <div id="abstract">
 <h2>
 Executive Summary
@@ -241,29 +70,276 @@ Executive Summary
 </p>
 </div>
 <p style="text-align: center;">
-{ <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> | Download PDF }
+{ <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> | <a href="https://phabricator.wikimedia.org/T143853">Phabricator Task</a> | Download PDF }
 </p>
 <div id="background" class="section level2">
 <h2>Background</h2>
-<p>…</p>
+<p>For the past several months, Discovery’s Wikipedia.org Portal team has been working on redesigning the (<a href="https://wikipedia.org">wikipedia.org</a>) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the <a href="https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0">final major patch</a> (for the next foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the “Read in your language” button (see Figure <a href="figures/portal_a.png">1a</a> and <a href="figures/portal_b.png">1b</a> below).</p>
+<div>
+<div style="float: left; width: 31%; margin-right: 2%">
+<a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting Wikipedia.org Portal with Russian as the preferred language."></a>
+<p class="caption">
+Figure 1 (a): Default experience when visiting Wikipedia.org Portal with Russian as the preferred language. Our deployment on August 16th, 2016, collapsed the language links into a hidden-by-default modal in an effort to make the page’s design cleaner and less overwhelming to new visitors.
+</p>
+</div>
+<div style="float: left; width: 31%; margin-left: 2%">
+<a href = "figures/portal_b.png"><img src = "figures/portal_b.png" alt = 'Figure 1 (b): Link to Ukrainian Wikipedia is only visible by clicking the "Read in your language" button to reveal the modal containing links to Wikipedia in various languages.'></a>
+<p class="caption">
+Figure 1 (b): Link to Ukrainian Wikipedia is only visible by clicking the “Read in your language” button to reveal the modal containing links to Wikipedia in various languages.
+</p>
+</div>
+<div style="float: left; width: 31%; margin-left: 2%">
+<a href = "figures/portal_c.png"><img src = "figures/portal_c.png" alt = "Figure 1 (c): How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe."></a>
+<p class="caption">
+Figure 1 (c): How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe.
+</p>
+</div>
+</div>
+<div style="clear:left;">
+
+</div>
+<p>Per <a href="https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy">some comments in a thread on mediawiki.org</a>, there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users browsers being configured to Russian, thereby burying the link to the <a href="https://uk.wikipedia.org/">Ukrainian Wikipedia</a> (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia’s <a href="https://uk.wikipedia.org/wiki/Головна_сторінка">main page</a> from Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.</p>
+<div class="figure">
+<img src="figures/pageviews_no-enwiki.png" alt="Figure 1: Pageviews to Russian, Ukrainian, Crimean Tatar, and German Wikipedias from various sources (direct, search engine, elsewhere, and Wikipedia.org Portal). Languages chosen via Languages of Ukraine. (Full resolution version.)" />
+<p class="caption">Figure 1: Pageviews to Russian, Ukrainian, Crimean Tatar, and German Wikipedias from various sources (direct, search engine, elsewhere, and Wikipedia.org Portal). Languages chosen via <a href="https://en.wikipedia.org/wiki/Languages_of_Ukraine">Languages of Ukraine</a>. (<a href="figures/pageviews_no-enwiki.png">Full resolution version</a>.)</p>
+</div>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<p>We used <a href="https://en.wikipedia.org/wiki/Bayesian_structural_time_series">Bayesian structural time series</a> (BSTS) to model Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal, using the R package “bsts” (Scott et al., 2016). See <a href="http://doi.org/10.1504/ijmmno.2014.059942">[1]</a>, <a href="http://doi.org/10.1214/14-AOAS788">[2]</a>, and <a href="https://CRAN.R-project.org/package=bsts">[7]</a> for more details.</p>
+<p>We tried multiple models, including different combinations of:</p>
+<ul>
+<li>seasonality (weekly &amp; monthly) components,</li>
+<li>a <a href="https://en.wikipedia.org/wiki/Autoregressive_model">one-back autoregressive</a> (AR1) component,</li>
+<li>specific pageview time series as control time series (e.g. Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews <em>not</em> from Wikipedia.org Portal),</li>
+<li><a href="https://en.wikipedia.org/wiki/Dynamic_time_warping">dynamic time warping-matched</a> pageview time series (“markets”) as control time series, such as Russian Wikibooks pageviews from elsewhere (not direct, from Wikipedia.org Portal, not from Google/Bing/Yahoo/Yandex/DuckDuckGo, and not from a Wikimedia site/tool/bot) which had the highest similarity, and</li>
+<li>a “mix of markets” that included similar markets and markets with the <a href="http://google.github.io/CausalImpact/CausalImpact.html#which-predictor-variables-were-used-in-the-model">highest posterior inclusion probability</a> via <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/#bayesian-variable-selection">Bayesian variable selection</a>.</li>
+</ul>
+<p>When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set <span class="math inline">\(Z_t = \beta^T X_t\)</span> and <span class="math inline">\(\alpha_t = 1\)</span>, so that each <span class="math inline">\(p\)</span>-th covariate had a coefficient <span class="math inline">\(\beta_p\)</span>. All models included an indicator variable <span class="math inline">\(x_{\text{deployment},t}\)</span> of Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that <span class="math inline">\(x_{\text{deployment},t} = 0\)</span> when <span class="math inline">\(t\)</span> is before 16 August 2016, and <span class="math inline">\(x_{\text{deployment},t} = 1\)</span> when <span class="math inline">\(t\)</span> is 16 August 2016 or after, so that <span class="math inline">\(\beta_{\text{deployment}}\)</span> is the effect of the deployment on Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal after accounting for variance in pageviews using various control time series.</p>
+<div class="figure">
+<img src="figures/bsts_aggregate_state_contribution_plots-1.png" alt="Figure 2: Plots of the 15 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison." width="1152" />
+<p class="caption">
+Figure 2: Plots of the 15 BSTS models’ predictions (in black and gray) with actual pageviews (blue circles) for comparison.
+</p>
+</div>
+<p>Fifteen different models were considered (see Figure 2) and nine were chosen according to a mix of visual inspection of the predictions, the models’ <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a> (proportion by which the residual variance is less than the variance of the original observations), and cumulative absolute error (see Figure 3).</p>
+<p class="caption">
+Figure 3 (below, interactive): Cumulative absolute error over time by model. (<a href="figures/cumulative_absolute_error.png">Non-interactive version.</a>).
+</p>
+<div id="htmlwidget-59fd15f63fcfd5df33b0" style="width:768px;height:384px;" class="dygraphs html-widget"></div>
+<script type="application/json" data-for="htmlwidget-59fd15f63fcfd5df33b0">{"x":{"attrs":{"title":"Comparison of BSTS Models","xlabel":"Date","ylabel":"Cumulative Absolute Error","labels":["day","Ukwiki from Wikimedia, AR + seasonality","Ruwiki from Portal, AR + seasonality","Ruwiki from Portal, Ukwiki not from Portal, AR + seasonality","Ruwiki from Portal, Ukwiki from Wikimedia, AR + seasonality","Ukwiki not from Portal, AR + seasonality","No markets, AR + seasonality","Ukwiki not from Portal, Rubooks from elsewhere, AR + seasonality","Matched markets, AR + seasonality","Mixed markets, AR + seasonality"],"retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60,"drawAxis":true},"y":{"drawAxis":true}},"stackedGraph":false,"fillGraph":false,"fillAlpha":0.15,"stepPlot":false,"drawPoints":false,"pointSize":1,"drawGapEdgePoints":false,"connectSeparatedPoints":false,"strokeWidth":1,"strokeBorderColor":"white","colors":["#00b769","#d354be","#436a00","#0047a7","#ffac3e","#00dfe0","#e5356f","#01845d","#ff8c80","#ad5700"],"colorValue":0.5,"colorSaturation":1,"includeZero":false,"drawAxesAtZero":false,"logscale":false,"axisTickSize":3,"axisLineColor":"black","axisLineWidth":0.3,"axisLabelColor":"black","axisLabelFontSize":14,"axisLabelWidth":60,"drawGrid":true,"gridLineWidth":0.3,"rightGap":5,"digitsAfterDecimal":2,"labelsKMB":true,"labelsKMG2":false,"labelsUTC":false,"maxNumberWidth":6,"animatedZooms":false,"mobileDisableYTouch":true,"legend":"always","labelsDivWidth":250,"labelsShowZeroValues":true,"labelsDiv":"prediction_error_legend","labelsSeparateLines":true,"hideOverlayOnMouseOut":true,"showRangeSelector":true,"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":"gray40","rangeSelectorPlotStrokeColor":"black","interactionModel":"Dygraph.Interaction.defaultModel"},"scale":"daily","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2016-06-29T00:00:00.000Z","2016-06-30T00:00:00.000Z","2016-07-01T00:00:00.000Z","2016-07-02T00:00:00.000Z","2016-07-03T00:00:00.000Z","2016-07-04T00:00:00.000Z","2016-07-05T00:00:00.000Z","2016-07-06T00:00:00.000Z","2016-07-07T00:00:00.000Z","2016-07-08T00:00:00.000Z","2016-07-09T00:00:00.000Z","2016-07-10T00:00:00.000Z","2016-07-11T00:00:00.000Z","2016-07-12T00:00:00.000Z","2016-07-13T00:00:00.000Z","2016-07-14T00:00:00.000Z","2016-07-15T00:00:00.000Z","2016-07-16T00:00:00.000Z","2016-07-17T00:00:00.000Z","2016-07-18T00:00:00.000Z","2016-07-19T00:00:00.000Z","2016-07-20T00:00:00.000Z","2016-07-21T00:00:00.000Z","2016-07-22T00:00:00.000Z","2016-07-23T00:00:00.000Z","2016-07-24T00:00:00.000Z","2016-07-25T00:00:00.000Z","2016-07-26T00:00:00.000Z","2016-07-27T00:00:00.000Z","2016-07-28T00:00:00.000Z","2016-07-29T00:00:00.000Z","2016-07-30T00:00:00.000Z","2016-07-31T00:00:00.000Z","2016-08-01T00:00:00.000Z","2016-08-02T00:00:00.000Z","2016-08-03T00:00:00.000Z","2016-08-04T00:00:00.000Z","2016-08-05T00:00:00.000Z","2016-08-06T00:00:00.000Z","2016-08-07T00:00:00.000Z","2016-08-08T00:00:00.000Z","2016-08-09T00:00:00.000Z","2016-08-10T00:00:00.000Z","2016-08-11T00:00:00.000Z","2016-08-12T00:00:00.000Z","2016-08-13T00:00:00.000Z","2016-08-14T00:00:00.000Z","2016-08-15T00:00:00.000Z","2016-08-16T00:00:00.000Z","2016-08-17T00:00:00.000Z","2016-08-18T00:00:00.000Z","2016-08-19T00:00:00.000Z","2016-08-20T00:00:00.000Z","2016-08-21T00:00:00.000Z","2016-08-22T00:00:00.000Z","2016-08-23T00:00:00.000Z","2016-08-24T00:00:00.000Z","2016-08-25T00:00:00.000Z","2016-08-26T00:00:00.000Z","2016-08-27T00:00:00.000Z","2016-08-28T00:00:00.000Z"],[11.1798375445132,16.9300170195387,89.749170302373,121.851968573704,159.730708205051,193.763066362336,214.886216417267,286.990410865981,288.329968776296,372.11964874906,372.856615756519,445.062677286817,547.312096701361,577.407266849006,692.038417566905,747.086578830731,828.596971165206,901.519133732441,910.486642424635,952.501644336356,954.451311741221,990.882627323535,1004.09617060045,1028.07835842957,1119.80692456061,1122.97317205117,1124.72919910949,1133.29066556969,1158.97980982894,1162.57154415087,1182.46174964865,1240.92567084606,1334.70142696378,1445.24066288616,1503.05836174964,1513.88090730157,1622.19608906096,1776.6868517067,1821.80849911224,1850.93666279958,1864.69252981142,1931.28963473152,2071.43777670615,2119.86152855559,2168.75202610878,2177.28877366748,2240.62041754844,2261.12135277569,2280.75723208968,2281.19620982766,2336.61326348306,2399.84980105569,2433.05527543461,2446.32540492275,2506.76377897429,2538.40032634101,2559.22064943488,2641.06088007126,2690.26980756627,2702.63097750686,2705.08428956668],[27.8644930621548,46.2851780556331,117.936103235701,146.525610156668,184.557301602196,222.920177723289,254.873221751229,321.481922537174,324.013281404311,408.990557316315,409.488474534661,482.82436981184,582.652847663171,624.753257588821,708.824209392138,769.417191821207,848.407053211104,929.262177538868,946.471074374634,986.582965603155,990.557982571945,1011.57126411204,1025.93162502719,1053.25440992068,1142.8606283384,1147.82961963518,1149.72074406923,1152.23572528678,1207.61086687383,1208.7222092363,1227.22311672367,1285.76054633572,1373.88362514582,1488.45701522265,1539.45083251543,1554.10137427423,1659.10517598162,1808.53557174022,1844.07670487491,1872.85612550536,1884.13165825947,1948.12906013835,2084.53947793696,2128.94987775882,2174.86633538481,2182.66971000542,2243.29390329728,2259.3405277102,2276.20164795215,2278.33204776801,2332.07466340749,2398.04003205178,2423.48622485127,2435.43902268126,2495.31670760381,2519.1945446132,2529.14117100334,2613.4768889879,2655.41815904644,2670.20063563182,2675.40155069608],[16.2008889957524,26.751441218431,99.79102533362,129.705782629034,168.590405325582,208.094903216007,242.438658157611,313.14467278162,315.462609567808,400.449946012522,403.928834960336,479.308248710227,575.839093534063,619.03960058151,709.676892885024,771.019338547584,847.950862090006,929.987356841408,950.289215888352,987.724593789954,992.440006095642,1017.00585110561,1033.26562449585,1061.44013664535,1149.53381746873,1156.29602068287,1159.11244363676,1160.72692643387,1207.74038079039,1209.62438811467,1229.12345650605,1287.15346927497,1373.82050642662,1490.99537283116,1536.36412903459,1549.54674813902,1653.73163953887,1800.2618394636,1832.80721569945,1862.17426438675,1871.0239541447,1935.43108936007,2066.05666670809,2107.92301686027,2152.64557316763,2158.39374981853,2217.76914275688,2231.71250434671,2262.63577704066,2267.28292601813,2316.4360772436,2380.55870013113,2404.58484844472,2417.02968375248,2475.74506842894,2497.3527764209,2510.32318669675,2596.14904083835,2633.872715132,2647.08690753637,2651.70241304983],[1.80293202528123,4.44074739202851,77.5293158484778,107.603731365247,147.531438087032,184.819387287629,208.311701214104,276.961253015535,279.84708566491,366.449451114111,370.350726755285,444.6254278834,540.633711400662,574.861873686042,678.456151261344,738.350778295251,815.36528680396,892.877787460058,911.25184980357,951.054282471021,951.785090950892,981.854795098409,997.563270017257,1025.36664699773,1113.81070612507,1118.28469001792,1119.07655911287,1125.90362499274,1162.13713232978,1166.36051989971,1186.96889177915,1241.62834623002,1330.37018638771,1446.80754981726,1492.93586571315,1505.63265870524,1610.94561171791,1758.62691940835,1791.40979219825,1819.90348892629,1831.98348703561,1899.29375918309,2035.19502905456,2080.37608686758,2128.79990152229,2136.60162976673,2197.12825240446,2213.21877048707,2236.28801824689,2237.70972777732,2293.10870414517,2361.74414540196,2387.39115577218,2396.08032293422,2456.91118483335,2479.68337655581,2492.68773052754,2576.67662524129,2617.92969852928,2631.20056432307,2637.49479697877],[14.0558699253076,22.335160631495,96.7854503792998,129.885048287754,171.835159397044,210.545575446131,243.843152527861,325.195839753809,327.165753896163,411.198402128289,418.046517248819,492.427095044178,585.061975321151,625.84534315627,738.318290548865,799.000895514795,875.723691850972,957.719977995995,980.044772205599,1016.12402701313,1018.42336282391,1054.22277749965,1069.74437350033,1098.29746461326,1183.93291884349,1192.12684359626,1194.12336046853,1197.89960242677,1221.10268496522,1225.3226935133,1246.88653264482,1300.8630494999,1387.14234467176,1507.85546246718,1546.77164755428,1558.79923334028,1663.96535959737,1806.44830373705,1834.87363377675,1863.58893682373,1872.95670056651,1939.76981094174,2069.66949152368,2109.78707062441,2157.07327690131,2161.30671217099,2219.90500530064,2234.62872586317,2234.63411274741,2238.07058682113,2297.27405623008,2372.1069015704,2389.02002013062,2394.78529332545,2457.75184486912,2478.24048471176,2491.52374251989,2574.95675745689,2612.43206511578,2626.59279650238,2634.47522690731],[0,0,74,105.791628446303,145.916511207987,186.169818111926,222.344417885081,299.854368426625,300.973366928178,385.525128584751,390.894160902152,465.840424267738,561.224957805529,607.085666825441,708.297539236344,768.723932494022,845.657225024373,929.878268788661,954.230612577972,990.689334787419,994.460093091898,1025.57453542778,1041.80768477603,1070.26712130783,1156.53562792172,1166.1489451087,1169.39999224526,1171.32845929357,1204.82970934957,1206.26587406519,1226.23350051854,1281.67301087464,1366.58043285032,1486.88372306473,1526.83862153373,1538.96155683512,1645.09100186943,1787.32883323472,1813.76725885003,1841.79971930987,1851.20215049943,1916.37794326924,2043.59381018582,2083.27833860068,2130.89525373092,2136.52275258224,2194.26753658299,2207.10848181302,2222.8426920347,2224.61196298042,2280.8388599991,2353.51514177538,2371.97059193524,2379.07891755621,2440.59385308977,2459.64233006953,2474.43526265801,2558.75175959012,2594.78663763542,2608.84242513113,2616.63397536049],[0.15215481686931,0.621284424689956,75.2558320416042,107.223419956853,148.384160107023,190.680829060918,228.968440031827,307.495666799201,308.47238087239,392.450007908094,402.558609926609,478.465694162515,569.63377371937,622.143328779488,721.055349833626,784.314013395787,858.024561302987,946.835364758,978.233312277165,1009.65720197856,1012.12241607795,1042.83298218808,1060.74331867599,1090.76438934447,1175.08091868959,1190.26682207483,1197.29601678544,1197.70991227027,1231.16790149785,1232.2838139134,1252.91392396744,1306.85233196794,1388.97362614721,1513.84628071786,1542.36720279547,1549.55776942125,1657.5106454144,1790.77411149345,1810.71597581383,1837.98558857354,1846.50114404824,1909.65219383873,2027.51536514062,2059.26868356774,2106.5341675246,2107.23346496901,2163.23373996926,2173.12601386763,2216.8896511416,2237.41095025217,2281.14357837888,2348.2616798496,2366.23925779673,2378.680825218,2434.64476047666,2449.09726262542,2470.16283833812,2560.49878188864,2585.88998179997,2598.81784119528,2605.78246839646],[5.95441239132596,10.0838739918875,85.0098616240683,118.961578648583,161.070784609567,204.630871293588,243.36546511079,323.504178391542,324.164202042817,410.315684717455,421.715263121829,499.33391152383,587.08646927837,638.129480859858,738.836083154957,804.218051824915,874.802761031331,962.933318403966,994.745677030064,1026.46326793013,1028.22791024346,1059.52188375892,1078.43894876108,1110.32066917288,1193.87688251064,1209.95105830244,1216.61542628975,1217.07674460323,1246.84676222466,1249.01893242886,1270.33926588233,1323.70068286372,1404.75856471422,1528.59192583055,1554.89813735935,1561.05958163694,1665.86427444532,1799.67992199207,1817.80414098634,1844.9811733082,1851.82174259841,1916.14877501879,2034.05659966387,2066.20444508374,2110.23847187195,2110.55872785523,2166.25484614975,2176.93284924506,2211.34939801987,2222.92601565636,2270.72819830092,2341.31413379395,2355.40335452091,2365.11246828864,2422.74215083924,2436.21853917175,2453.65868083266,2543.46562823951,2569.90635949085,2584.12606346736,2591.78025282131],[2.11363528464172,2.82739378422091,74.5585778802722,108.250767897896,151.812901288818,190.667588082635,211.9377421774,282.288610488023,285.463992145448,374.934247176925,384.931417165691,461.912804864439,550.080918538064,591.018347584096,688.933051852974,751.97118573892,823.446793962332,904.434988113928,931.616597398677,962.267264870724,963.192041115515,990.087799192283,1006.57559037138,1038.272383854,1123.86154012748,1136.99863078877,1144.99434634656,1147.4052850102,1182.04933977496,1184.19474151141,1204.06509007409,1256.60433159531,1339.80971759991,1455.75288826871,1484.72344744362,1488.71319440805,1591.43715959445,1728.55954535073,1753.05379022903,1780.51821376614,1789.6027019811,1855.41667504926,1977.13262780522,2009.61204505479,2052.93167648438,2053.70239667373,2110.73037559308,2128.91520941389,2161.00811353354,2167.65912574573,2214.61551343287,2284.27500474659,2301.92635171032,2310.3884334823,2369.74413492103,2384.92999573689,2397.38082629154,2485.52591254272,2518.94544557052,2533.5728106456,2541.19089621028]],"fixedtz":false,"tzone":"UTC"},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
+<div id="prediction_error_legend">
+
+</div>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Control</th>
+<th align="right">Distance</th>
+<th align="right">Correlation</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<p class="caption">
+Table 1: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal.
+</p>
+<table>
+<colgroup>
+<col width="3%" />
+<col width="45%" />
+<col width="6%" />
+<col width="8%" />
+<col width="8%" />
+<col width="9%" />
+<col width="17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Model Nickname</th>
+<th align="right">R²</th>
+<th align="right">AIC</th>
+<th align="right">BIC</th>
+<th align="right">Estimate</th>
+<th align="center">95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">Ruwiki from Portal, Ukwiki from Wikimedia</td>
+<td align="right">0.991</td>
+<td align="right">723.319</td>
+<td align="right">773.980</td>
+<td align="right">-30.263</td>
+<td align="center">(-108.87, 11.77)</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left">Mixed markets</td>
+<td align="right">0.988</td>
+<td align="right">722.816</td>
+<td align="right">777.698</td>
+<td align="right">-40.901</td>
+<td align="center">(-94.57, 68.59)</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left">Ukwiki from Wikimedia</td>
+<td align="right">0.988</td>
+<td align="right">725.469</td>
+<td align="right">774.019</td>
+<td align="right">-22.657</td>
+<td align="center">(-102.72, 54.33)</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="left">Ukwiki not from Portal</td>
+<td align="right">0.973</td>
+<td align="right">718.674</td>
+<td align="right">767.224</td>
+<td align="right">-10.809</td>
+<td align="center">(-75.59, 61.18)</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="left">Ruwiki from Portal, Ukwiki not from Portal</td>
+<td align="right">0.973</td>
+<td align="right">722.209</td>
+<td align="right">772.870</td>
+<td align="right">-33.993</td>
+<td align="center">(-180.76, 41.84)</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="left">Ruwiki from Portal</td>
+<td align="right">0.972</td>
+<td align="right">720.967</td>
+<td align="right">769.517</td>
+<td align="right">-20.609</td>
+<td align="center">(-113.91, 41.23)</td>
+</tr>
+<tr class="odd">
+<td align="left">7</td>
+<td align="left">Matched markets</td>
+<td align="right">0.953</td>
+<td align="right">755.842</td>
+<td align="right">844.498</td>
+<td align="right">-40.954</td>
+<td align="center">(-139.09, 50.48)</td>
+</tr>
+<tr class="even">
+<td align="left">8</td>
+<td align="left">No markets</td>
+<td align="right">0.927</td>
+<td align="right">717.844</td>
+<td align="right">764.284</td>
+<td align="right">-25.482</td>
+<td align="center">(-104.36, 75.79)</td>
+</tr>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">Ukwiki not from Portal, Rubooks from elsewhere</td>
+<td align="right">0.838</td>
+<td align="right">720.446</td>
+<td align="right">771.107</td>
+<td align="right">-56.511</td>
+<td align="center">(-118.28, 21.12)</td>
+</tr>
+</tbody>
+</table>
+<div class="caption">
+Table 2: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment from the top 9 BSTS models we looked at:
+<ol class="caption">
+<li>
+Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as control time series.
+</li>
+<li>
+Using Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots, Russian Wikibooks from elsewhere (not direct, from a search engine/Portal/Wikimedia), Ukrainian Wiktionary pageviews from a search engine as control time series.
+</li>
+<li>
+Using Ukrainian Wikipedia pageviews from Wikimedia stiates/tools/bots as a control time series.
+</li>
+<li>
+Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as a control time series.
+</li>
+<li>
+Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as control time series.
+</li>
+<li>
+Using Russian Wikipedia pageviews from Wikipedia.org Portal as a control time series.
+</li>
+<li>
+Using the 20 top market matches (see Table 1) as control time series, with elevated prior inclusion probabilities for certain “markets” like Russian Wikipedia pageviews from Wikipedia.org Portal.
+</li>
+<li>
+Not using any pageview counts as a control time series.
+</li>
+<li>
+Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal and Russian Wikibooks pageviews from elsewhere (not direct, from a search engine/Portal/Wikimedia) as control time series.
+</li>
+</ol>
+</div>
+<p>In Table 2 above, we list the top 9 models we chose and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as “there is a 95% probability that the true value of the effect is inside this interval”. The effect of the deployment was estimated to be negative, but not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have sufficient evidence to say that the deployment had a positive or a negative effect on Ukrainian Wikipedia’s main page pageviews from Wikipedia.org Portal. Furthermore, if we <em>were</em> to set aside the statistical insignificance, the point estimate of the decrease in pageviews due to deployment was between 11 and 56 pageviews across the models, which is not a particularly high number of pageviews lost. Specifically, the effect of the deployment was estimated by the best model (No. 1, where we used Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as covariates) to be ~30 pageviews on a daily basis, although this estimate is not statistically significant.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<div id="reading" class="section level3">
+<h3>Reading</h3>
+<ol style="list-style-type: decimal">
+<li>Scott, S. L., &amp; Varian, H. R. (2014). Predicting the present with bayesian structural time series. International Journal of Mathematical Modelling and Numerical Optimisation, 5(1/2), 4. <a href="http://doi.org/10.1504/ijmmno.2014.059942" class="uri">http://doi.org/10.1504/ijmmno.2014.059942</a></li>
+<li>Brodersen, K. H., Gallusser, F., &amp; Koehler, J. (2015). Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics. <a href="http://doi.org/10.1214/14-AOAS788" class="uri">http://doi.org/10.1214/14-AOAS788</a>, <a href="http://research.google.com/pubs/pub41854.html" class="uri">http://research.google.com/pubs/pub41854.html</a></li>
+<li>Larsen, K. (2016, January 13). Making Causal Impact Analysis Easy [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/" class="uri">http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/</a></li>
+<li>Larsen, K. (2016, April 21). Sorry ARIMA, but I’m Going Bayesian [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/" class="uri">http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/</a></li>
+</ol>
+</div>
+<div id="software" class="section level3">
+<h3>Software</h3>
+<ol start="5" style="list-style-type: decimal">
+<li>R Core Team (2016). <em>R: A Language and Environment for Statistical Computing</em>. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a></li>
+<li>Dowle M, Srinivasan A, Short T, Saporta SLwcfR and Antonyan E (2015). <em>data.table: Extension of Data.frame</em>. R package version 1.9.6, <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a></li>
+<li>Scott SL (2016). <em>bsts: Bayesian Structural Time Series</em>. R package version 0.6.5, <a href="https://CRAN.R-project.org/package=bsts" class="uri">https://CRAN.R-project.org/package=bsts</a></li>
+<li>Giorgino T (2009). “Computing and Visualizing Dynamic Time Warping Alignments in R: The dtw Package.” <em>Journal of Statistical Software</em>, <em>31</em>(7), pp. 1-24. <a href="http://www.jstatsoft.org/v31/i07/" class="uri">http://www.jstatsoft.org/v31/i07/</a></li>
+<li>Tormene P, Giorgino T, Quaglini S and Stefanelli M (2008). “Matching Incomplete Time Series with Dynamic Time Warping: An Algorithm and an Application to Post-Stroke Rehabilitation.” <em>Artificial Intelligence in Medicine</em>, <em>45</em>(1), pp. 11-34. doi: 10.1016/j.artmed.2008.11.007 (URL: <a href="http://doi.org/10.1016/j.artmed.2008.11.007" class="uri">http://doi.org/10.1016/j.artmed.2008.11.007</a>).</li>
+<li>Kim L (2015). <em>MarketMatching: Market matching and causal impact inference</em>. R package version 0.0.1.</li>
+<li>Bache SM and Wickham H (2014). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 1.5, <a href="https://CRAN.R-project.org/package=magrittr" class="uri">https://CRAN.R-project.org/package=magrittr</a></li>
+<li>Wickham H (2009). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. ISBN 978-0-387-98140-6, <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a></li>
+<li>Vanderkam D, Allaire J, Owen J, Gromer D, Shevtsov P and Thieurmel B (2016). <em>dygraphs: Interface to ‘Dygraphs’ Interactive Time Series Charting Library</em>. R package version 1.1.1-2.</li>
+<li>Allaire J, Cheng J, Xie Y, McPherson J, Chang W, Allen J, Wickham H, Atkins A and Hyndman R (2016). <em>rmarkdown: Dynamic Documents for R</em>. R package version 1.0, <a href="https://CRAN.R-project.org/package=rmarkdown" class="uri">https://CRAN.R-project.org/package=rmarkdown</a></li>
+<li>Xie Y (2016). <em>knitr: A General-Purpose Package for Dynamic Report Generation in R</em>. R package version 1.14, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a></li>
+<li>Xie Y (2015). <em>Dynamic Documents with R and knitr</em>, 2nd edition. Chapman and Hall/CRC, Boca Raton, Florida. ISBN 978-1498716963, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a></li>
+<li>Xie Y (2014). “knitr: A Comprehensive Tool for Reproducible Research in R.” In Stodden V, Leisch F and Peng RD (eds.), <em>Implementing Reproducible Computational Research</em>. Chapman and Hall/CRC. ISBN 978-1466561595, <a href="http://www.crcpress.com/product/isbn/9781466561595" class="uri">http://www.crcpress.com/product/isbn/9781466561595</a></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</div>
+
+<div id="postamble" data-toggle="wy-nav-shift" class="status">
+<p class="author"><span class="glyphicon glyphicon-user"></span> Mikhail Popov (Analysis &amp; Report)</p>
+<p class="author"><span class="glyphicon glyphicon-user"></span> Deborah Tankersley (Product Management)</p>
+<p class="date"><span class="glyphicon glyphicon-calendar"></span> 31 August 2016</p>
 </div>
 
 
 
-</div>
-</div>
 
-</div>
-
+<!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
-
-// add bootstrap table styles to pandoc tables
-$(document).ready(function () {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
-});
-
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
 </script>
-
 
 </body>
 </html>

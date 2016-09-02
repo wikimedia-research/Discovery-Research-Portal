@@ -6,15 +6,47 @@ body {
   text-align: center;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Gill Sans", sans-serif;
+#content {
+  background-color: white !important;
 }
 
-p.caption {
-  font-family: "Gill Sans", sans-serif;
+#table-of-contents h2 a {
+  font-size: larger;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Gill Sans", "Open Sans", sans-serif;
+  font-weight: normal;
+  color: black;
+}
+
+.caption {
+  font-style: normal !important;
+}
+
+div.caption, p.caption {
+  font-family: "Gill Sans", "Open Sans", sans-serif;
   font-size: small;
-  padding: 0.15in 10% 0 10%;
+  padding: 0 10%;
   text-align: left;
+}
+
+ol.caption, ul.caption {
+  font-family: "Gill Sans", "Open Sans", sans-serif;
+  font-size: small;
+  text-align: left;
+}
+
+ol.caption li, ul.caption li {
+  margin-left: 0.25in;
+}
+
+table {
+  width: 100%;
+}
+
+.dygraph-legend, .dygraph-label {
+  font-family: "Gill Sans", "Open Sans", sans-serif;
 }
 
 div.figure {

@@ -4,7 +4,8 @@ library(magrittr)
 library(ggplot2)
 
 # pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160805-20160825.tsv", col_types = "Dccccclllil")
-pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160629-20160828.tsv", col_types = "Dccccclllil")
+# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160629-20160828.tsv", col_types = "Dccccclllil")
+pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = "Dcclccclllil")
 pageviews <- dplyr::left_join(pageviews, polloi::get_prefixes()[, c("language", "prefix")], by = "prefix")
 pageviews <- as.data.table(pageviews)
 
@@ -27,8 +28,9 @@ temp <- pageviews[, list(pageviews = sum(pageviews)), by = c("date", "project", 
   facet_wrap( ~ from, nrow = 1) +
   geom_vline(xintercept = as.numeric(as.Date("2016-08-16")), linetype = "dashed") +
   ggthemes::theme_base(base_size = 12, base_family = "Helvetica Neue") +
-  theme(legend.position = "bottom", panel.border = element_rect(color = "white")) +
+  theme(legend.position = "bottom", rect = element_rect(color = NA),
+        panel.border = element_rect(colour = "black")) +
   ggtitle("Pageviews to Russian, Ukrainian, Crimean Tatar, and German Wikipedias",
           subtitle = "Dashed line represents August 16th deployment of the secondary link collapse on Wikipedia.org Portal")
   } %>% ggsave("pageviews_no-enwiki.png", plot = ., path = figures_dir,
-               width = 21, height = 7, dpi = 150)
+               width = 15, height = 5, dpi = 300)
