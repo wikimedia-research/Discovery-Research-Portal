@@ -53,7 +53,7 @@ For the past several months, Discovery's Wikipedia.org Portal team has been work
 
 Per [some comments in a thread on mediawiki.org](https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy), there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users browsers being configured to Russian, thereby burying the link to the [Ukrainian Wikipedia](https://uk.wikipedia.org/) (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia's [main page](https://uk.wikipedia.org/wiki/Головна_сторінка) from Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.
 
-![Figure 1: Pageviews to Russian, Ukrainian, Crimean Tatar, and German Wikipedias from various sources (direct, search engine, elsewhere, and Wikipedia.org Portal). Languages chosen via [Languages of Ukraine](https://en.wikipedia.org/wiki/Languages_of_Ukraine). ([Full resolution version](figures/pageviews_no-enwiki.png).)](figures/pageviews_no-enwiki.png)
+![Figure 1: Pageviews to Ukrainian Wikipedia main page and other pages. ([Full resolution version](figures/pageviews_no-enwiki.png).)](figures/pageviews.png)
 
 ## Methods
 
@@ -72,26 +72,45 @@ We tried multiple models, including different combinations of:
 
 When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set $Z_t = \beta^T X_t$ and $\alpha_t = 1$, so that each $p$-th covariate had a coefficient $\beta_p$. All models included an indicator variable $x_{\text{deployment},t}$ of Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that $x_{\text{deployment},t} = 0$ when $t$ is before 16 August 2016, and $x_{\text{deployment},t} = 1$ when $t$ is 16 August 2016 or after, so that $\beta_{\text{deployment}}$ is the effect of the deployment on Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal after accounting for variance in pageviews using various control time series.
 
-```{r bsts_aggregate_state_contribution_plots, fig.height = 20, fig.width = 12, fig.cap = "Figure 2: Plots of the 15 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison."}
-par(mfrow = c(5, 3))
+```{r bsts_aggregate_state_contribution_plots, fig.height = 20, fig.width = 16, fig.cap = "Figure 2: Plots of the 15 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison."}
+par(mfrow = c(5, 4))
 for (model_name in names(model_list)) {
-  plot(model_list[[model_name]], "state", main = model_name, ylim = c(400, 900))
+  plot(model_list[[model_name]], "state", main = model_name)
 }; par(mfrow = c(1, 1))
 ```
 
 Fifteen different models were considered (see Figure 2) and nine were chosen according to a mix of visual inspection of the predictions, the models' [R<sup>2</sup>](https://en.wikipedia.org/wiki/Coefficient_of_determination) (proportion by which the residual variance is less than the variance of the original observations), and cumulative absolute error (see Figure 3).
 
-<p class = "caption">Figure 3 (below, interactive): Cumulative absolute error over time by model. ([Non-interactive version.](figures/cumulative_absolute_error.png)).</p>
+```{r top_models_and_colors_RuBNUkS}
+## Of primary interest:
+top_models_idx <- lapply(model_list[which(grepl("RuBNUkS", names(model_list)))], function(model) {
+  summary(model)$rsquare
+}) %>% unlist %>% { which(. > 0.9) } %>% unname
 
-```{r prediction_error_dygraph, fig.width = 8, fig.height = 4}
-colours <- c("#00b769", "#d354be", "#436a00", "#0047a7", "#ffac3e", "#00dfe0", "#e5356f", "#01845d", "#ff8c80", "#ad5700")
+## Maybe show...
+# top_models_idx <- lapply(model_list, function(model) {
+#   summary(model)$rsquare
+# }) %>% unlist %>% { which(. > 0.9) } %>% unname
+
+if (length(top_models_idx) == 10) {
+  colours <- c("#00b769", "#d354be", "#436a00", "#0047a7", "#ffac3e", "#00dfe0", "#e5356f", "#01845d", "#ff8c80", "#ad5700")
 # ^ made with http://tools.medialab.sciences-po.fr/iwanthue/
 # Settings:
 # - Color space is 'colorblind friendly'
 # - 10 colors
 # - hard (force vector) instead of k-means
+} else if (length(top_models_idx) == 9) {
+  colours <- RColorBrewer::brewer.pal(9, "Set1")[-8]
+} else {
+  colours <- polloi::smart_palette(length(top_models_idx))
+}
+```
+
+<p class = "caption">Figure 3 (below, interactive): Cumulative absolute error over time by model. ([Non-interactive version.](figures/cumulative_absolute_error.png)).</p>
+
+```{r prediction_error_dygraph, fig.width = 8, fig.height = 4}
 prediction_errors %>%
-  { .[c(names(sort(tail(., 1)[, c(3, 4, 6, 7, 8, 9, 13, 14, 15)], decreasing = TRUE)), "Date")] } %>%
+  { .[c(names(sort(tail(., 1)[, top_models_idx], decreasing = TRUE)), "Date")] } %>%
   { xts::xts(.[, 1:(ncol(.)-1)], order.by = .$Date) } %>%
   dygraph(main = "Comparison of BSTS Models", ylab = "Cumulative Absolute Error", xlab = "Date") %>%
   dyOptions(colors = colours, labelsKMB = TRUE) %>%
@@ -114,10 +133,10 @@ market_match$BestMatches %>%
 
 <p class = "caption">Table 1: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal.</p>
 
-```{r selected_models_summary}
-quantiles <- matrix(0.0, nrow = 9, ncol = 6)
-rownames(quantiles) <- names(model_list)[c(3, 4, 6, 7, 8, 9, 13, 14, 15)]
-for (model_name in names(model_list)[c(3, 4, 6, 7, 8, 9, 13, 14, 15)]) {
+```{r selected_models_summary_RuBNUkS}
+quantiles <- matrix(0.0, nrow = length(top_models_idx), ncol = 6)
+rownames(quantiles) <- names(model_list)[top_models_idx]
+for (model_name in names(model_list)[top_models_idx]) {
   quantiles[model_name, 4:6] <- quantile(model_list[[model_name]]$coefficients[-(1:burn_in), "post_deployment"], c(0.025, 0.5, 0.975))
   quantiles[model_name, 1] <- summary(model_list[[model_name]], burn = burn_in)$rsquare
   quantiles[model_name, 2] <- AIC(model_list[[model_name]])
@@ -129,6 +148,7 @@ quantiles <- as.data.frame(quantiles)
 quantiles$`Model Nickname` <- rownames(quantiles)
 quantiles$`95% CI` = sprintf("(%.2f, %.2f)", quantiles$Lower95, quantiles$Upper95)
 quantiles$Lower95 <- NULL; quantiles$Upper95 <- NULL
+quantiles$`Model Nickname` <- sub("(.*) // (.*)", "\\2", quantiles$`Model Nickname`)
 quantiles <- quantiles[order(quantiles$`R²`, quantiles$BIC, decreasing = c(TRUE, FALSE)),
                        c("Model Nickname", "R²", "AIC", "BIC", "Estimate", "95% CI")]
 rownames(quantiles) <- 1:nrow(quantiles)
@@ -137,7 +157,36 @@ knitr::kable(quantiles, format = "markdown", digits = 3, align = c("l", "r", "r"
 
 <div class = "caption">Table 2: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate & 95% credible interval of the effect of Wikipedia.org Portal's secondary link collapse patch deployment from the top 9 BSTS models we looked at: <ol class = "caption"><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots, Russian Wikibooks from elsewhere (not direct, from a search engine/Portal/Wikimedia), Ukrainian Wiktionary pageviews from a search engine as control time series.</li><li>Using Ukrainian Wikipedia pageviews from Wikimedia stiates/tools/bots as a control time series.</li><li>Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as a control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews not from Wikipedia.org Portal as control time series.</li><li>Using Russian Wikipedia pageviews from Wikipedia.org Portal as a control time series.</li><li>Using the 20 top market matches (see Table 1) as control time series, with elevated prior inclusion probabilities for certain "markets" like Russian Wikipedia pageviews from Wikipedia.org Portal.</li><li>Not using any pageview counts as a control time series.</li><li>Using Ukrainian Wikipedia pageviews not from Wikipedia.org Portal and Russian Wikibooks pageviews from elsewhere (not direct, from a search engine/Portal/Wikimedia) as control time series.</li></ol></div>
 
-In Table 2 above, we list the top 9 models we chose and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as "there is a 95% probability that the true value of the effect is inside this interval". The effect of the deployment was estimated to be negative, but not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have sufficient evidence to say that the deployment had a positive or a negative effect on Ukrainian Wikipedia's main page pageviews from Wikipedia.org Portal. Furthermore, if we _were_ to set aside the statistical insignificance, the point estimate of the decrease in pageviews due to deployment was between 11 and 56 pageviews across the models, which is not a particularly high number of pageviews lost. Specifically, the effect of the deployment was estimated by the best model (No. 1, where we used Russian Wikipedia pageviews from Wikipedia.org Portal and Ukrainian Wikipedia pageviews from Wikimedia sites/tools/bots as covariates) to be ~30 pageviews on a daily basis, although this estimate is not statistically significant.
+```{r top_models_and_colors}
+top_models_idx <- lapply(model_list, function(model) {
+  summary(model)$rsquare
+}) %>% unlist %>% { which(. > 0.9) } %>% unname
+```
+
+```{r selected_models_summary}
+quantiles <- matrix(0.0, nrow = length(top_models_idx), ncol = 6)
+rownames(quantiles) <- names(model_list)[top_models_idx]
+for (model_name in names(model_list)[top_models_idx]) {
+  quantiles[model_name, 4:6] <- quantile(model_list[[model_name]]$coefficients[-(1:burn_in), "post_deployment"], c(0.025, 0.5, 0.975))
+  quantiles[model_name, 1] <- summary(model_list[[model_name]], burn = burn_in)$rsquare
+  quantiles[model_name, 2] <- AIC(model_list[[model_name]])
+  quantiles[model_name, 3] <- BIC(model_list[[model_name]])
+}; rm(model_name)
+colnames(quantiles) <- c("R²", "AIC", "BIC", "Lower95", "Estimate", "Upper95")
+rownames(quantiles) <- sub(", AR + seasonality", "", rownames(quantiles), fixed = TRUE)
+quantiles <- as.data.frame(quantiles)
+quantiles$`Model Nickname` <- rownames(quantiles)
+quantiles$`95% CI` = sprintf("(%.2f, %.2f)", quantiles$Lower95, quantiles$Upper95)
+quantiles$Lower95 <- NULL; quantiles$Upper95 <- NULL
+quantiles$Population <- sub("(.*) // (.*)", "\\1", quantiles$`Model Nickname`)
+quantiles$`Model Nickname` <- sub("(.*) // (.*)", "\\2", quantiles$`Model Nickname`)
+quantiles <- quantiles[order(quantiles$Population, quantiles$`R²`, quantiles$BIC, decreasing = c(FALSE, TRUE, FALSE)),
+                       c("Population", "Model Nickname", "R²", "AIC", "BIC", "Estimate", "95% CI")]
+rownames(quantiles) <- 1:nrow(quantiles)
+knitr::kable(quantiles, format = "markdown", digits = 3, align = c("l", "l", "r", "r", "r", "r", "c"), row.names = TRUE)
+```
+
+In Table 2 above, we list the top 9 models we chose and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as "there is a 95% probability that the true value of the effect is inside this interval". The effect of the deployment was estimated to be ..., but not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have sufficient evidence to say that the deployment had a positive or a negative effect on Ukrainian Wikipedia's main page pageviews from Wikipedia.org Portal. ...
 
 ## References
 

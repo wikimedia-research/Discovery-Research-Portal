@@ -1,4 +1,4 @@
-start_date <- Sys.Date() - 61
+start_date <- as.Date("2016-09-02") # Sys.Date() - 61
 end_date <- Sys.Date() - 1
 pageviews <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(date) {
   cat("Fetching pageview counts from", as.character(date, "%d %B %Y"), "\n")
@@ -78,12 +78,18 @@ pageviews <- do.call(rbind, lapply(seq(start_date, end_date, "day"), function(da
 
 pageviews$post_deployment <- pageviews$date >= "2016-08-16"
 
+# readr::write_tsv(
+#   pageviews,
+#   paste0("~/pageview_counts_portal-ukwiki_",
+#          as.character(start_date, "%Y%m%d"), "-",
+#          as.character(end_date, "%Y%m%d"),
+#          ".tsv")
+# )
+
+old_pageviews <- readr::read_tsv("pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = "Dcclccclllil")
 readr::write_tsv(
-  pageviews,
-  paste0("~/pageview_counts_portal-ukwiki_",
-         as.character(start_date, "%Y%m%d"), "-",
-         as.character(end_date, "%Y%m%d"),
-         ".tsv")
+  rbind(old_pageviews, pageviews),
+  paste0("~/pageview_counts_portal-ukwiki_20160703-", as.character(end_date, "%Y%m%d"), ".tsv")
 )
 
 q(save = "no")

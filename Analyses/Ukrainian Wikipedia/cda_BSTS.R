@@ -1,37 +1,38 @@
-source("config.R")
-library(data.table)
+source("refine.R")
+
 library(bsts)
-library(magrittr)
 library(ggplot2)
 library(dygraphs)
-
-# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160805-20160825.tsv", col_types = "Dccccclllil")
-# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160629-20160828.tsv", col_types = "Dccccclllil")
-pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = "Dcclccclllil")
-pageviews <- dplyr::left_join(pageviews, polloi::get_prefixes()[, c("language", "prefix")], by = "prefix")
-pageviews <- as.data.table(pageviews)
-
-pageviews$post_deployment_indicator <- as.numeric(pageviews$post_deployment)
-pageviews$site <- paste(tolower(pageviews$language), pageviews$project)
-pageviews$page <- ifelse(pageviews$is_main_page, "(main page)", "(other pages)")
-pageviews$from <- ifelse(pageviews$from_wikipedia_portal, "from Wikipedia.org Portal", "from elsewhere")
-pageviews$from[pageviews$from_search_redirect] <- "from Wikipedia.org Portal (search-redirect.php)"
-pageviews$from[pageviews$from_search_engine] <- "from a search engine"
-pageviews$from[pageviews$referer_class == "none"] <- "direct (e.g. bookmark or homepage)"
-pageviews$from[pageviews$referer_class == "internal" & !pageviews$from_wikipedia_portal] <- "from a Wikimedia project/tool/bot"
-pageviews$source <- paste(pageviews$site, pageviews$page, pageviews$from)
 
 interim <- pageviews[project == "wikipedia" & from_wikipedia_portal == FALSE & from_search_redirect == FALSE, ]
 interim$source <- paste(interim$site, "not from Wikipedia.org Portal")
 pageviews <- rbind(pageviews, interim); rm(interim)
 
+interim <- pageviews[source == "ukrainian wikipedia (main page) from Wikipedia.org Portal" &
+                       speaks_ukrainian == FALSE &
+                       speaks_russian == TRUE, ]
+interim$source <- "Ukrainian Wikipedia (Main Page) PVs from Portal's Russian-but-not-Ukrainian-speaking visitors"
+pageviews <- rbind(pageviews, interim); rm(interim)
+
+pageviews$valid <- TRUE
+pageviews$valid[pageviews$project != "wikipedia" & (pageviews$from_wikipedia_portal == TRUE | pageviews$from_search_redirect == TRUE)] <- FALSE
+pageviews$valid[pageviews$project == "wikipedia" & pageviews$from_wikipedia_portal == TRUE & pageviews$page != "(main page)"] <- FALSE
+
+invalid <- pageviews[valid == TRUE, list(pageviews = sum(pageviews)), by = c("date", "source")] %>%
+  tidyr::spread(source, pageviews, fill = 0) %>%
+  tidyr::gather(source, pageviews, -date) %>%
+  dplyr::group_by(source) %>%
+  dplyr::summarize(mpv = median(pageviews)) %>%
+  dplyr::filter(mpv < 20) %>%
+  { .$source }
+pageviews$valid[pageviews$source %in% invalid] <- FALSE; rm(invalid)
+
 # devtools::install_github("google/CausalImpact", force = TRUE)
 # install.packages("dtw")
 # devtools::install_github("klarsen1/MarketMatching", force = TRUE)
 library(MarketMatching)
-
 cat("Finding market matches...")
-market_match <- pageviews[, list(pageviews = sum(pageviews)), by = c("date", "source")] %>%
+market_match <- pageviews[valid == TRUE, list(pageviews = sum(pageviews)), by = c("date", "source")] %>%
   tidyr::spread(source, pageviews, fill = 0) %>%
   tidyr::gather(source, pageviews, -date) %>%
   best_matches(id_variable = "source",
@@ -43,401 +44,81 @@ market_match <- pageviews[, list(pageviews = sum(pageviews)), by = c("date", "so
                start_match_period = as.character(min(pageviews$date)),
                end_match_period = "2016-08-15")
 cat("done.\n")
-# dplyr::filter(market_match$BestMatches, source == "ukrainian wikipedia (main page) from Wikipedia.org Portal")[, c(2:6)]
+# View(dplyr::filter(market_match$BestMatches, source == "Ukrainian Wikipedia (Main Page) PVs from Portal's Russian-but-not-Ukrainian-speaking visitors")[, c(2:6)])
 
-best_markets <- dplyr::filter(market_match$BestMatches, source == "ukrainian wikipedia (main page) from Wikipedia.org Portal")$BestControl
-
+source("bsts_funcs.R")
 n_iters <- 1e4
 burn_in <- 1e3
-
-make_data_bsts_ready <- function(data) {
-  return({
-    data %>%
-    tidyr::spread(source, pageviews, fill = 0) %>%
-    { xts::xts(.[, -1, with = FALSE], order.by = .$date) } %>%
-    { .[, union("ukrainian wikipedia (main page) from Wikipedia.org Portal", names(.))] }
-  })
-}
-
-make_prior <- function(data) {
-  prior_inclusion <- rep(0, ncol(data))
-  prior_inclusion[names(data) == "post_deployment"] <- 1
-  prior_inclusion[names(data) %in% c(
-    "russian wikipedia (main pages) from Wikipedia.org Portal",
-    "ukrainian wikipedia (other pages) from Wikipedia.org Portal",
-    "ukrainian wikipedia (main page) from a Wikimedia project/tool/bot")] <- 0.9
-  # prior_inclusion[names(data) %in% c(
-  #   "russian wikibooks (main pages) from elsewhere",
-  #   "ukrainian wiktionary from a search engine")] <- 0.5
-  prior_inclusion[names(data) == "ukrainian wikipedia (main page) not from Wikipedia.org Portal"] <- 0.6
-  prior_inclusion[names(data) == "ukrainian wikipedia (other pages) not from Wikipedia.org Portal"] <- 0.1
-  ## Unnecessary because of (Intercept) term:
-  # prior_inclusion <- prior_inclusion[-which(names(data) == "ukrainian wikipedia (main page) from Wikipedia.org Portal")]
-  # names(prior_inclusion) <- names(data)[-1]
-  prior <- SpikeSlabPrior(x = model.matrix(`ukrainian wikipedia (main page) from Wikipedia.org Portal` ~ ., data = data),
-                          y = data$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                          prior.inclusion.probabilities = prior_inclusion)
-  return(prior)
-}
-
-model_1 <- function() {
-
-  cat("Fitting model 'Matched markets, no AR/seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    best_markets),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  model <- bsts(`ukrainian wikipedia (main page) from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`),
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_2 <- function() {
-
-  cat("Fitting model 'Mixed markets, no AR/seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal", # 1.7% incl. prob.
-                                    "ukrainian wikipedia from a Wikimedia project/tool/bot",
-                                    "russian wikibooks from elsewhere", # 6% incl. prob.
-                                    "ukrainian wiktionary from a search engine"), # 3% incl. prob.
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`),
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_3 <- function() {
-
-  cat("Fitting model 'Matched markets, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    best_markets),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_4 <- function() {
-
-  cat("Fitting model 'Mixed markets, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal", # 1.7% incl. prob.
-                                    "ukrainian wikipedia from a Wikimedia project/tool/bot",
-                                    "russian wikibooks from elsewhere", # 6% incl. prob.
-                                    "ukrainian wiktionary from a search engine"), # 3% incl. prob.
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_5 <- function() {
-
-  cat("Fitting model 'Ruwiki from Portal, Ukwiki from Wikimedia, no AR/seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal", # 1.7% incl. prob.
-                                    "ukrainian wikipedia from a Wikimedia project/tool/bot"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_6 <- function() {
-
-  cat("Fitting model 'Ruwiki from Portal, Ukwiki from Wikimedia, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal", # 1.7% incl. prob.
-                                    "ukrainian wikipedia from a Wikimedia project/tool/bot"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_7 <- function() {
-
-  cat("Fitting model 'Ruwiki from Portal, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_8 <- function() {
-
-  cat("Fitting model 'Ukwiki from elsewhere, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "ukrainian wikipedia from a Wikimedia project/tool/bot"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_9 <- function() {
-
-  cat("Fitting model 'No markets, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source == "ukrainian wikipedia (main page) from Wikipedia.org Portal",
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_10 <- function() {
-
-  cat("Fitting model 'No markets, seasonality, no AR'\n")
-
-  ukwiki <- pageviews[source == "ukrainian wikipedia (main page) from Wikipedia.org Portal",
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_11 <- function() {
-
-  cat("Fitting model 'No markets, AR, no seasonality'\n")
-
-  ukwiki <- pageviews[source == "ukrainian wikipedia (main page) from Wikipedia.org Portal",
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_12 <- function() {
-
-  cat("Fitting model 'No markets, no AR/seasonality'\n")
-
-  ukwiki <- pageviews[source == "ukrainian wikipedia (main page) from Wikipedia.org Portal",
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`),
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_13 <- function() {
-
-  cat("Fitting model 'Ruwiki from Portal, Ukwiki not from Portal, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikipedia from Wikipedia.org Portal",
-                                    "ukrainian wikipedia not from Wikipedia.org Portal"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_14 <- function() {
-
-  cat("Fitting model 'Ukwiki not from Portal, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "ukrainian wikipedia not from Wikipedia.org Portal"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
-
-model_15 <- function() {
-
-  cat("Fitting model 'Ukwiki not from Portal, Rubooks from elsewhere, AR + seasonality'\n")
-
-  ukwiki <- pageviews[source %in% c("ukrainian wikipedia (main page) from Wikipedia.org Portal", # response
-                                    "russian wikibooks from elsewhere",
-                                    "ukrainian wikipedia not from Wikipedia.org Portal"),
-                      list(pageviews = sum(pageviews), post_deployment = max(post_deployment_indicator)),
-                      by = c("date", "source")] %>% make_data_bsts_ready
-
-  ss <- AddLocalLinearTrend(list(), ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`)
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 7, season.duration = 1) # Weekly seasonality
-  ss <- AddSeasonal(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`,
-                    nseasons = 4, season.duration = 7) # Monthly seasonality
-  ss <- AddAr(ss, ukwiki$`ukrainian wikipedia (main page) from Wikipedia.org Portal`, lags = 1)
-
-  model <- bsts(`ukrainian wikipedia from Wikipedia.org Portal` ~ ., data = ukwiki,
-                family = "gaussian", bma.method = "SSVS", prior = make_prior(ukwiki),
-                state.specification = ss,
-                niter = burn_in + n_iters, seed = 0)
-  return(model)
-
-}
+best_markets <- dplyr::filter(market_match$BestMatches, source == "Ukrainian Wikipedia (Main Page) PVs from Portal's Russian-but-not-Ukrainian-speaking visitors")$BestControl
 
 model_list <- list(
-  "Matched markets, no AR/seasonality" = model_1(),
-  "Mixed markets, no AR/seasonality" = model_2(),
-  "Matched markets, AR + seasonality" = model_3(),
-  "Mixed markets, AR + seasonality" = model_4(),
-  "Ruwiki from Portal, Ukwiki from Wikimedia, no AR/seasonality" = model_5(),
-  "Ruwiki from Portal, Ukwiki from Wikimedia, AR + seasonality" = model_6(),
-  "Ruwiki from Portal, AR + seasonality" = model_7(),
-  "Ukwiki from Wikimedia, AR + seasonality" = model_8(),
-  "No markets, AR + seasonality" = model_9(),
-  "No markets, seasonality, no AR" = model_10(),
-  "No markets, AR, no seasonality" = model_11(),
-  "No markets, no AR/seasonality" = model_12(),
-  "Ruwiki from Portal, Ukwiki not from Portal, AR + seasonality" = model_13(),
-  "Ukwiki not from Portal, AR + seasonality" = model_14(),
-  "Ukwiki not from Portal, Rubooks from elsewhere, AR + seasonality" = model_15()
-)
 
-# rm(model_1, model_2, model_3, model_4, model_5, model_6, model_7, model_8, model_9, model_10, model_11, model_12, model_13, model_14, model_15)
+  "RuBNUkS // No control markets" = make_model(pageviews),
+
+  "RuBNUkS // No control markets, AR, or seasonalities" = make_model(pageviews,
+    seasonality = c("weekly" = FALSE, "monthly" = FALSE),
+    autoregressive = FALSE),
+
+  "RuBNUkS // Matched markets only" = make_model(pageviews, best_markets,
+    seasonality = c("weekly" = FALSE, "monthly" = FALSE),
+    autoregressive = FALSE),
+
+  "RuBNUkS // Matched markets with AR(1) & seasonalities" = make_model(pageviews, best_markets),
+
+  "RuBNUkS // Selected markets" = make_model(pageviews, c(
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "german wikipedia (main page) from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal",
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (main page) from a Wikimedia project/tool/bot"
+  )),
+
+  "RuBNUkS // Mix of matched & selected markets" = make_model(pageviews, union(c(
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "german wikipedia (main page) from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal",
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (main page) from a Wikimedia project/tool/bot"),
+    head(best_markets, 2))),
+
+  "RuBNUkS // Ruwiki Main from Portal & Ukwiki Other from Portal" = make_model(pageviews, c(
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "RuBNUkS // Ruwiki Main from Portal" = make_model(pageviews, "russian wikipedia (main page) from Wikipedia.org Portal"),
+
+  "RuBNUkS // Ukwiki Other from Portal" = make_model(pageviews, "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
+
+  "RuBNUks in Ukraine // No control markets" = make_model(pageviews[country == "Ukraine", ]),
+
+  "RuBNUks in Ukraine // Ukraine's Ukwiki Other from Portal" = make_model(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
+
+  "RuBNUks in Ukraine // Ukraine's Ruwiki Main from Portal" = make_model(pageviews[country == "Ukraine", ], "russian wikipedia (main page) from Wikipedia.org Portal"),
+
+  "All Speakers // No control markets" = make_model_2(pageviews),
+
+  "All Speakers // Ruwiki Main from Portal & Ukwiki Other from Portal" = make_model_2(pageviews, c(
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "All Speakers // Ruwiki Main from Portal" = make_model_2(pageviews, "russian wikipedia (main page) from Wikipedia.org Portal"),
+
+  "All Speakers // Ukwiki Other from Portal" = make_model_2(pageviews, "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
+
+  "All Speakers in Ukraine // No control markets" = make_model_2(pageviews[country == "Ukraine", ]),
+
+  "All Speakers in Ukraine // Ruwiki Main from Portal & Ukwiki Other from Portal" = make_model_2(pageviews[country == "Ukraine", ], c(
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "All Speakers in Ukraine // Ruwiki Main from Portal" = make_model_2(pageviews[country == "Ukraine", ], "russian wikipedia (main page) from Wikipedia.org Portal"),
+
+  "All Speakers in Ukraine // Ukwiki Other from Portal" = make_model_2(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal")
+
+)
 
 prediction_errors <- matrix(0, nrow = length(unique(pageviews$date)), ncol = length(model_list))
 colnames(prediction_errors) <- names(model_list)
@@ -450,11 +131,14 @@ prediction_errors$Date <- unique(pageviews$date)
 {
   prediction_errors %>%
   tidyr::gather(Model, `Cumulative Absolute Error`, -Date) %>%
+  dplyr::mutate(Population = sub("(.*) // (.*)", "\\1", Model),
+                Model = sub("(.*) // (.*)", "\\2", Model)) %>%
   ggplot(aes(x = Date, y = `Cumulative Absolute Error`, color = Model)) +
   geom_line() +
+  facet_wrap(~ Population, ncol = 1, scales = "free_y") +
   ggthemes::theme_tufte(12, "Gill Sans") +
   theme(legend.position = "bottom") +
-  ggtitle("Cumulative absolute error over time by model",
+  ggtitle("Cumulative absolute error over time by model and population",
           subtitle = "Bayesian structural time series (BSTS) models")
 } %>% ggsave("cumulative_absolute_error.png", plot = ., path = figures_dir,
              width = 18, height = 6, dpi = 300)
@@ -470,33 +154,35 @@ logLik.bsts <- function(object, ...) {
             class = "logLike")
 }
 
-for (model_name in names(model_list)) {
-  cat("\n==============\n")
-  print(which(names(model_list) == model_name))
-  print(model_name)
-  print(sprintf("R2: %.2f | GoF: %.2f | AIC: %.2f | BIC: %.2f",
-                summary(model_list[[model_name]], burn = burn_in)$rsquare,
-                summary(model_list[[model_name]], burn = burn_in)$relative.gof,
-                AIC(model_list[[model_name]]),
-                BIC(model_list[[model_name]])))
-  print(summary(model_list[[model_name]], burn = burn_in)$coefficients["post_deployment", ])
-}
+# for (model_name in names(model_list)) {
+#   cat("\n==============\n")
+#   print(which(names(model_list) == model_name))
+#   print(model_name)
+#   print(sprintf("R2: %.2f | GoF: %.2f | AIC: %.2f | BIC: %.2f",
+#                 summary(model_list[[model_name]], burn = burn_in)$rsquare,
+#                 summary(model_list[[model_name]], burn = burn_in)$relative.gof,
+#                 AIC(model_list[[model_name]]),
+#                 BIC(model_list[[model_name]])))
+#   print(summary(model_list[[model_name]], burn = burn_in)$coefficients["post_deployment", ])
+# }
 
-quantiles <- matrix(0.0, nrow = length(model_list), ncol = 3)
+quantiles <- matrix(0.0, nrow = length(model_list), ncol = 6)
 rownames(quantiles) <- names(model_list)
 for (model_name in names(model_list)) {
   quantiles[model_name, 1] <- summary(model_list[[model_name]], burn = burn_in)$rsquare
   quantiles[model_name, 2] <- AIC(model_list[[model_name]])
   quantiles[model_name, 3] <- BIC(model_list[[model_name]])
+  quantiles[model_name, 4:6] <- quantile(model_list[[model_name]]$coefficients[-(1:burn_in), "post_deployment"], c(0.5, 0.025, 0.975))
 }; rm(model_name)
-colnames(quantiles) <- c("R squared", "AIC", "BIC")
+colnames(quantiles) <- c("R squared", "AIC", "BIC", "Point Estimate", "Lower Bound", "Upper Bound")
 quantiles <- as.data.frame(quantiles)
-knitr::kable(quantiles[order(quantiles$`R squared`, decreasing = TRUE), ],
-             format = "markdown", digits = 3, align = c("r", "r", "r"))
-knitr::kable(quantiles[order(quantiles$`AIC`, decreasing = FALSE), ],
-             format = "markdown", digits = 3, align = c("r", "r", "r"))
-knitr::kable(quantiles[order(quantiles$`BIC`, decreasing = FALSE), ],
-             format = "markdown", digits = 3, align = c("r", "r", "r"))
+View(quantiles)
+# knitr::kable(quantiles[order(quantiles$`R squared`, decreasing = TRUE), ],
+#              format = "markdown", digits = 3, align = c("r", "r", "r"))
+# knitr::kable(quantiles[order(quantiles$`AIC`, decreasing = FALSE), ],
+#              format = "markdown", digits = 3, align = c("r", "r", "r"))
+# knitr::kable(quantiles[order(quantiles$`BIC`, decreasing = FALSE), ],
+#              format = "markdown", digits = 3, align = c("r", "r", "r"))
 
 cat("Saving BSTS stuff...")
 save(list = c("market_match", "logLik.bsts", "model_list", "pageviews", "n_iters", "burn_in", "prediction_errors"),
