@@ -90,11 +90,11 @@ model_list <- list(
 
   "RuBNUkS // Ukwiki Other from Portal" = make_model(pageviews, "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
 
-  "RuBNUks in Ukraine // No control markets" = make_model(pageviews[country == "Ukraine", ]),
+  "RuBNUkS in Ukraine // No control markets" = make_model(pageviews[country == "Ukraine", ]),
 
-  "RuBNUks in Ukraine // Ukraine's Ukwiki Other from Portal" = make_model(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
+  "RuBNUkS in Ukraine // Ukraine's Ukwiki Other from Portal" = make_model(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
 
-  "RuBNUks in Ukraine // Ukraine's Ruwiki Main from Portal" = make_model(pageviews[country == "Ukraine", ], "russian wikipedia (main page) from Wikipedia.org Portal"),
+  "RuBNUkS in Ukraine // Ukraine's Ruwiki Main from Portal" = make_model(pageviews[country == "Ukraine", ], "russian wikipedia (main page) from Wikipedia.org Portal"),
 
   "All Speakers // No control markets" = make_model_2(pageviews),
 

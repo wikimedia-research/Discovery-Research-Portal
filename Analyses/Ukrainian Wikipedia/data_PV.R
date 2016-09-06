@@ -86,7 +86,7 @@ pageviews$post_deployment <- pageviews$date >= "2016-08-16"
 #          ".tsv")
 # )
 
-old_pageviews <- readr::read_tsv("pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = "Dcclccclllil")
+old_pageviews <- readr::read_tsv("pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = c("Dcclccclllcllil"))
 readr::write_tsv(
   rbind(old_pageviews, pageviews),
   paste0("~/pageview_counts_portal-ukwiki_20160703-", as.character(end_date, "%Y%m%d"), ".tsv")
@@ -95,6 +95,4 @@ readr::write_tsv(
 q(save = "no")
 
 # Locally
-# system2("scp", c("stat2:/home/bearloga/pageview_counts_portal-ukwiki_20160805-20160825.tsv", "data/"))
-# system2("scp", c("stat2:/home/bearloga/pageview_counts_portal-ukwiki_20160629-20160828.tsv", "data/"))
-# system2("scp", c("stat2:/home/bearloga/pageview_counts_portal-ukwiki_20160703-20160901.tsv", "data/"))
+system2("scp", c("-r", "stat2:/home/bearloga/pageview_counts_portal-ukwiki_*.tsv", "data/"))

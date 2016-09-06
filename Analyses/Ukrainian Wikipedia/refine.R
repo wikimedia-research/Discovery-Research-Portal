@@ -3,9 +3,7 @@ source("config.R")
 library(data.table)
 library(magrittr)
 
-# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160805-20160825.tsv", col_types = "Dccccclllil")
-# pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160629-20160828.tsv", col_types = "Dccccclllil")
-pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160703-20160901.tsv", col_types = "Dcclccclllcllil")
+pageviews <- readr::read_tsv("data/pageview_counts_portal-ukwiki_20160703-20160905.tsv", col_types = "Dcclccclllcllil")
 pageviews <- dplyr::left_join(pageviews, polloi::get_prefixes()[, c("language", "prefix")], by = "prefix")
 pageviews <- as.data.table(pageviews)
 
