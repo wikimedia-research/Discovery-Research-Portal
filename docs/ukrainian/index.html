@@ -20,12 +20,6 @@
 <script src="index_files/bootstrap-3.3.6/js/bootstrap.min.js"></script>
 <link href="index_files/readthedown-0.1/readthedown.css" rel="stylesheet" />
 <script src="index_files/readthedown-0.1/readthedown.js"></script>
-<script src="index_files/htmlwidgets-0.7/htmlwidgets.js"></script>
-<link href="index_files/dygraphs-1.1.1/dygraph.css" rel="stylesheet" />
-<script src="index_files/dygraphs-1.1.1/dygraph-combined.js"></script>
-<script src="index_files/moment-2.8.4/moment.js"></script>
-<script src="index_files/moment-timezone-0.2.5/moment-timezone-with-data.js"></script>
-<script src="index_files/dygraphs-binding-1.1.1.2/dygraphs.js"></script>
 
 
 
@@ -65,7 +59,10 @@
 Executive Summary
 </h2>
 <p>
-…
+On 16 August 2016, Discovery deployed a major design change to the Wikipedia.org Portal page. As of the deployment, the links to Wikipedia in 200+ languages have been put into a modal drop-down to make the page cleaner and less overwhelming to new visitors. Before that, Discovery added language detection to the page so that users (who have their language preferences set in their browser) would see their language around the Wikipedia globe logo, without having to look for it in the long list of languages. Discovery received criticism about the change, with some users hypothesizing that the change has resulted in a decrease to Ukrainian Wikipedia’s pageviews because some visitors may have Russian set as a language, but not Ukrainian.
+</p>
+<p>
+In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that’s where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the effect of the deployment is not statistically significant. In other words, we do have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from Wikipedia.org Portal.
 </p>
 </div>
 <p style="text-align: center;">
@@ -99,8 +96,8 @@ Executive Summary
 </div>
 <p>Per <a href="https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy">some comments in a thread on mediawiki.org</a>, there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users browsers being configured to Russian, thereby burying the link to the <a href="https://uk.wikipedia.org/">Ukrainian Wikipedia</a> (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia’s <a href="https://uk.wikipedia.org/wiki/Головна_сторінка">main page</a> from Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.</p>
 <div class="figure">
-<img src="figures/pageviews.png" alt="Figure 1: Pageviews to Ukrainian Wikipedia main page and other pages. (Full resolution version.)" />
-<p class="caption"><strong>Figure 1</strong>: Pageviews to Ukrainian Wikipedia main page and other pages. (<a href="figures/pageviews.png">Full resolution version</a>.)</p>
+<img src="figures/pageviews.png" alt="Figure 2: Pageviews to Ukrainian Wikipedia main page and other pages. (Full resolution version.)" />
+<p class="caption"><strong>Figure 2</strong>: Pageviews to Ukrainian Wikipedia main page and other pages. (<a href="figures/pageviews.png">Full resolution version</a>.)</p>
 </div>
 </div>
 <div id="methods" class="section level2">
@@ -110,26 +107,18 @@ Executive Summary
 <ul>
 <li>seasonality (weekly &amp; monthly) components,</li>
 <li>a <a href="https://en.wikipedia.org/wiki/Autoregressive_model">one-back autoregressive</a> (AR1) component,</li>
-<li>specific pageview time series as control time series (e.g. Russian Wikipedia pageviews from Wikipedia.org Portal, Ukrainian Wikipedia pageviews <em>not</em> from Wikipedia.org Portal),</li>
-<li><a href="https://en.wikipedia.org/wiki/Dynamic_time_warping">dynamic time warping-matched</a> pageview time series (“markets”) as control time series, such as Russian Wikibooks pageviews from elsewhere (not direct, from Wikipedia.org Portal, not from Google/Bing/Yahoo/Yandex/DuckDuckGo, and not from a Wikimedia site/tool/bot) which had the highest similarity, and</li>
+<li>specific pageview time series as control time series (e.g. Russian Wikipedia Main Page pageviews from Wikipedia.org Portal, Ukrainian Wikipedia Main Page pageviews <em>not</em> from Wikipedia.org Portal),</li>
+<li><a href="https://en.wikipedia.org/wiki/Dynamic_time_warping">dynamic time warping-matched</a> pageview time series (“markets”) as control time series, such as Ukrainian Wikitionary (Main Page) pageviews from a Wikimedia project/tool/bot (which had the 2<sup>nd</sup> highest similarity).</li>
 <li>a “mix of markets” that included similar markets and markets with the <a href="http://google.github.io/CausalImpact/CausalImpact.html#which-predictor-variables-were-used-in-the-model">highest posterior inclusion probability</a> via <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/#bayesian-variable-selection">Bayesian variable selection</a>.</li>
 </ul>
 <p>When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set <span class="math inline">\(Z_t = \beta^T X_t\)</span> and <span class="math inline">\(\alpha_t = 1\)</span>, so that each <span class="math inline">\(p\)</span>-th covariate had a coefficient <span class="math inline">\(\beta_p\)</span>. All models included an indicator variable <span class="math inline">\(x_{\text{deployment},t}\)</span> of Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that <span class="math inline">\(x_{\text{deployment},t} = 0\)</span> when <span class="math inline">\(t\)</span> is before 16 August 2016, and <span class="math inline">\(x_{\text{deployment},t} = 1\)</span> when <span class="math inline">\(t\)</span> is 16 August 2016 or after, so that <span class="math inline">\(\beta_{\text{deployment}}\)</span> is the effect of the deployment on Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal after accounting for variance in pageviews using various control time series.</p>
 <div class="figure">
-<img src="figures/bsts_aggregate_state_contribution_plots-1.png" alt="**Figure 2**: Plots of the 15 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison. ([Full resolution version](figures/bsts_aggregate_state_contribution_plots-1.png))" width="1536" />
+<img src="figures/bsts_aggregate_state_contribution_plots-1.png" alt="**Figure 3**: Plots of the 28 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison. ([Full resolution version](figures/bsts_aggregate_state_contribution_plots-1.png))" width="1536" />
 <p class="caption">
-<strong>Figure 2</strong>: Plots of the 15 BSTS models’ predictions (in black and gray) with actual pageviews (blue circles) for comparison. (<a href="figures/bsts_aggregate_state_contribution_plots-1.png">Full resolution version</a>)
+<strong>Figure 3</strong>: Plots of the 28 BSTS models’ predictions (in black and gray) with actual pageviews (blue circles) for comparison. (<a href="figures/bsts_aggregate_state_contribution_plots-1.png">Full resolution version</a>)
 </p>
 </div>
-<p>Twenty different models were considered (see Figure 2) and ?? were chosen according to a mix of visual inspection of the predictions, the models’ <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a> (proportion by which the residual variance is less than the variance of the original observations), and cumulative absolute error (see Figure 3).</p>
-<p class="caption">
-<strong>Figure 3</strong> (below, interactive): Cumulative absolute error over time by model. (<a href="figures/cumulative_absolute_error.png">Non-interactive version.</a>).
-</p>
-<div id="htmlwidget-bcb83262428393a138b3" style="width:768px;height:384px;" class="dygraphs html-widget"></div>
-<script type="application/json" data-for="htmlwidget-bcb83262428393a138b3">{"x":{"attrs":{"title":"Models of Ukrainian Wikipedia's Main Page pageviews from Russian-but-not-Ukrainian-speaking users","xlabel":"Date","ylabel":"Cumulative Absolute Error","labels":["day","Ukwiki Other from Portal","Mix of matched & selected markets","Matched markets with AR(1) & seasonalities"],"retainDateWindow":false,"axes":{"x":{"pixelsPerLabel":60,"drawAxis":true},"y":{"drawAxis":true}},"stackedGraph":false,"fillGraph":false,"fillAlpha":0.15,"stepPlot":false,"drawPoints":false,"pointSize":1,"drawGapEdgePoints":false,"connectSeparatedPoints":false,"strokeWidth":1,"strokeBorderColor":"white","colors":["#E41A1C","#377EB8","#4DAF4A"],"colorValue":0.5,"colorSaturation":1,"includeZero":false,"drawAxesAtZero":false,"logscale":false,"axisTickSize":3,"axisLineColor":"black","axisLineWidth":0.3,"axisLabelColor":"black","axisLabelFontSize":14,"axisLabelWidth":60,"drawGrid":true,"gridLineWidth":0.3,"rightGap":5,"digitsAfterDecimal":2,"labelsKMB":true,"labelsKMG2":false,"labelsUTC":false,"maxNumberWidth":6,"animatedZooms":false,"mobileDisableYTouch":true,"legend":"always","labelsDivWidth":250,"labelsShowZeroValues":true,"labelsDiv":"prediction_error_legend","labelsSeparateLines":true,"hideOverlayOnMouseOut":true,"showRangeSelector":true,"rangeSelectorHeight":40,"rangeSelectorPlotFillColor":"gray40","rangeSelectorPlotStrokeColor":"black","interactionModel":"Dygraph.Interaction.defaultModel"},"scale":"daily","annotations":[],"shadings":[],"events":[],"format":"date","data":[["2016-07-03T00:00:00.000Z","2016-07-04T00:00:00.000Z","2016-07-05T00:00:00.000Z","2016-07-06T00:00:00.000Z","2016-07-07T00:00:00.000Z","2016-07-08T00:00:00.000Z","2016-07-09T00:00:00.000Z","2016-07-10T00:00:00.000Z","2016-07-11T00:00:00.000Z","2016-07-12T00:00:00.000Z","2016-07-13T00:00:00.000Z","2016-07-14T00:00:00.000Z","2016-07-15T00:00:00.000Z","2016-07-16T00:00:00.000Z","2016-07-17T00:00:00.000Z","2016-07-18T00:00:00.000Z","2016-07-19T00:00:00.000Z","2016-07-20T00:00:00.000Z","2016-07-21T00:00:00.000Z","2016-07-22T00:00:00.000Z","2016-07-23T00:00:00.000Z","2016-07-24T00:00:00.000Z","2016-07-25T00:00:00.000Z","2016-07-26T00:00:00.000Z","2016-07-27T00:00:00.000Z","2016-07-28T00:00:00.000Z","2016-07-29T00:00:00.000Z","2016-07-30T00:00:00.000Z","2016-07-31T00:00:00.000Z","2016-08-01T00:00:00.000Z","2016-08-02T00:00:00.000Z","2016-08-03T00:00:00.000Z","2016-08-04T00:00:00.000Z","2016-08-05T00:00:00.000Z","2016-08-06T00:00:00.000Z","2016-08-07T00:00:00.000Z","2016-08-08T00:00:00.000Z","2016-08-09T00:00:00.000Z","2016-08-10T00:00:00.000Z","2016-08-11T00:00:00.000Z","2016-08-12T00:00:00.000Z","2016-08-13T00:00:00.000Z","2016-08-14T00:00:00.000Z","2016-08-15T00:00:00.000Z","2016-08-16T00:00:00.000Z","2016-08-17T00:00:00.000Z","2016-08-18T00:00:00.000Z","2016-08-19T00:00:00.000Z","2016-08-20T00:00:00.000Z","2016-08-21T00:00:00.000Z","2016-08-22T00:00:00.000Z","2016-08-23T00:00:00.000Z","2016-08-24T00:00:00.000Z","2016-08-25T00:00:00.000Z","2016-08-26T00:00:00.000Z","2016-08-27T00:00:00.000Z","2016-08-28T00:00:00.000Z","2016-08-29T00:00:00.000Z","2016-08-30T00:00:00.000Z","2016-08-31T00:00:00.000Z","2016-09-01T00:00:00.000Z"],[0.845609633023042,22.4267593967155,23.8894466479985,24.6837522892897,40.9708051253303,42.1799298431841,62.3273298955564,93.7840219153677,130.028585922972,139.266885647727,145.71042105446,151.036893132939,167.307772709465,169.535881641271,184.09410028255,187.828987257901,199.247202196549,199.583881466628,200.1685886419,201.244316695087,201.952340019131,214.514918558064,239.289056587872,248.698076792768,273.187770679532,290.577256699233,300.390076484951,312.570345907662,337.287536082791,350.28706344716,355.452759966981,359.576967332941,359.853137812694,361.929057550881,370.799389326554,381.584633608165,392.10041061562,400.318979177054,409.775843518796,417.26021455326,418.71900553176,429.562028039478,430.422573977952,437.109289788139,447.459985470621,447.936976412627,454.115312912033,472.520750858402,477.153753341635,478.631206452228,481.725238002755,494.972148205817,497.861946189616,500.631887105996,521.199870631586,532.897309901071,534.651765366512,545.39641737004,553.120129766233,553.934068253548,569.673503599193],[2.28807762670689,24.7333236100711,27.4662915133448,27.5429657986124,44.2514465778804,45.8616147271887,66.2268556059684,98.1485937414103,135.640704194081,141.410698334909,147.671988241829,153.666023048497,170.111940683672,170.679715392251,184.274188399101,188.680938295546,201.034814835682,201.755184466478,202.142567449283,203.728905028857,205.029798393914,217.170506124068,242.696359510724,250.1598964812,275.154998380641,290.520446946086,299.655179461816,310.459014048135,334.492348059538,345.745521082138,350.3258508252,354.535085224607,354.660679656031,357.380833744524,365.958637866764,375.915078394186,386.623217815157,395.537771021091,402.863511112895,410.689276447256,411.65376695061,423.295638967684,425.348193899738,432.145962059696,444.671245513946,447.098135357786,451.632561475889,469.78631627005,475.114837058497,478.129748862385,481.180524944494,493.578455932216,495.545469118782,497.687730967296,517.518812393311,527.1902581346,528.922335658017,539.168964163971,546.405293070251,546.843927076445,563.127005136957],[0.0227632338573427,20.9689964190885,22.9692318845133,23.9881171617494,40.5076585599159,42.8706793533331,63.4489760427929,94.1301180716755,130.790222227288,136.938726456862,143.466879877393,149.938399880865,167.978982172371,168.810875256102,183.313098830873,187.622716178876,199.555008667641,200.783266882674,200.854345064785,201.752309584126,202.221527006173,215.033738025362,239.952662461533,247.005073307914,270.900794279063,285.471895911019,293.817201360282,305.503075783724,329.284615817377,340.297478444928,346.384724737813,351.459031056139,352.61038853004,354.779294383024,363.092336853808,373.729166491703,383.448037849147,393.106392273638,401.440626262642,409.661516397991,409.751787500474,420.894691106731,423.180975493319,429.71782657213,440.422531449138,442.045935765948,447.132250871519,465.334860711463,472.296591975607,474.478102373259,478.312935120596,491.253293709409,492.462329954542,495.405864518006,515.971228719316,524.6952186399,525.370034259444,535.687810256649,542.497394378523,542.508305464775,558.464867051542]],"fixedtz":false,"tzone":"UTC"},"evals":["attrs.interactionModel"],"jsHooks":[]}</script>
-<div id="prediction_error_legend">
-
-</div>
+<p>Twenty different models were considered (see Figure 2) and 9 were chosen according to the models’ <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a> (proportion by which the residual variance is less than the variance of the original observations).</p>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
@@ -250,72 +239,161 @@ Executive Summary
 </tbody>
 </table>
 <p class="caption">
-<strong>Table 1</strong>: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal.
+<strong>Table 1</strong>: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal. These are the time series used as controls in models that use “matched markets”.
 </p>
 <table>
 <colgroup>
 <col width="3%" />
-<col width="43%" />
+<col width="15%" />
+<col width="40%" />
+<col width="5%" />
+<col width="6%" />
 <col width="6%" />
 <col width="8%" />
-<col width="8%" />
-<col width="9%" />
-<col width="17%" />
+<col width="13%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left"></th>
-<th align="left">Model Nickname</th>
+<th align="left">Population</th>
+<th align="right">Model Nickname</th>
 <th align="right">R²</th>
 <th align="right">AIC</th>
 <th align="right">BIC</th>
-<th align="right">Estimate</th>
-<th align="center">95% CI</th>
+<th align="center">Estimate</th>
+<th align="left">95% CI</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="left">Mix of matched &amp; selected markets</td>
-<td align="right">0.967</td>
-<td align="right">534.438</td>
-<td align="right">593.543</td>
-<td align="right">-2.542</td>
-<td align="center">(-12.95, 17.83)</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Ruwiki Main from Portal</td>
+<td align="right">0.720</td>
+<td align="right">551.963</td>
+<td align="right">601.974</td>
+<td align="center">-2.734</td>
+<td align="left">(-78.56, 12.95)</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
-<td align="left">Ukwiki Other from Portal</td>
-<td align="right">0.911</td>
-<td align="right">525.133</td>
-<td align="right">573.683</td>
-<td align="right">0.350</td>
-<td align="center">(-19.65, 19.93)</td>
+<td align="left">RuBNUkS</td>
+<td align="right">No control markets</td>
+<td align="right">0.769</td>
+<td align="right">551.571</td>
+<td align="right">599.407</td>
+<td align="center">1.797</td>
+<td align="left">(-15.33, 34.68)</td>
 </tr>
 <tr class="odd">
 <td align="left">3</td>
-<td align="left">Matched markets with AR(1) &amp; seasonalities</td>
-<td align="right">0.900</td>
-<td align="right">560.570</td>
-<td align="right">649.227</td>
-<td align="right">-2.702</td>
-<td align="center">(-14.55, 28.64)</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Matched markets with AR(1) &amp; seasonalities</td>
+<td align="right">0.813</td>
+<td align="right">589.991</td>
+<td align="right">681.316</td>
+<td align="center">-0.695</td>
+<td align="left">(-20.78, 20.39)</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Ukwiki Other from Portal</td>
+<td align="right">0.913</td>
+<td align="right">556.998</td>
+<td align="right">607.009</td>
+<td align="center">0.158</td>
+<td align="left">(-15.72, 19.75)</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.921</td>
+<td align="right">556.006</td>
+<td align="right">608.191</td>
+<td align="center">-2.489</td>
+<td align="left">(-14.07, 12.41)</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Selected markets</td>
+<td align="right">0.940</td>
+<td align="right">557.370</td>
+<td align="right">613.904</td>
+<td align="center">-1.437</td>
+<td align="left">(-11.42, 9.93)</td>
+</tr>
+<tr class="odd">
+<td align="left">7</td>
+<td align="left">RuBNUkS</td>
+<td align="right">Mix of matched &amp; selected markets</td>
+<td align="right">0.955</td>
+<td align="right">564.273</td>
+<td align="right">625.156</td>
+<td align="center">-1.740</td>
+<td align="left">(-11.64, 11.33)</td>
+</tr>
+<tr class="even">
+<td align="left">8</td>
+<td align="left">RuBNUkS in Ukraine</td>
+<td align="right">Ukraine’s Ruwiki Main from Portal</td>
+<td align="right">0.712</td>
+<td align="right">522.535</td>
+<td align="right">572.546</td>
+<td align="center">-1.065</td>
+<td align="left">(-10.19, 8.69)</td>
+</tr>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">RuBNUkS in Ukraine</td>
+<td align="right">No control markets</td>
+<td align="right">0.835</td>
+<td align="right">528.735</td>
+<td align="right">576.571</td>
+<td align="center">2.044</td>
+<td align="left">(-19.44, 18.86)</td>
 </tr>
 </tbody>
 </table>
 <div class="caption">
-<strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment from the top 9 BSTS models we looked at:
+<strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment from the top BSTS models of Ukrainian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking users (“RuBNUkS”) – in general and specifically pageviews from users with IP addresses in Ukraine. All of the following models included weekly and monthly seasonalities and AR(1) components:
 <ol class="caption">
 <li>
-…
+Russian Wikipedia Main Page pageviews from Wikipedia.org Portal
+</li>
+<li>
+No control time series.
+</li>
+<li>
+DTW-matched time series.
+</li>
+<li>
+Ukrainian Wikipedia non-Main pageviews from Wikipedia.org Portal
+</li>
+<li>
+1 and 4
+</li>
+<li>
+The following control time series:
+</li>
+<li>
+The following control time series:
+</li>
+<li>
+Russian Wikipedia Main Page pageviews from Wikipedia.org Portal visitors in Ukraine
+</li>
+<li>
+No control time series.
 </li>
 </ol>
 </div>
-<table>
+<table style="width:100%;">
 <colgroup>
 <col width="2%" />
 <col width="18%" />
-<col width="38%" />
+<col width="40%" />
 <col width="5%" />
 <col width="6%" />
 <col width="6%" />
@@ -337,135 +415,266 @@ Executive Summary
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="left">All Speakers</td>
-<td align="left">Ruwiki Main from Portal</td>
-<td align="right">0.974</td>
-<td align="right">653.845</td>
-<td align="right">702.395</td>
-<td align="right">-23.893</td>
-<td align="center">(-74.90, 43.92)</td>
+<td align="left">RuBNUkS</td>
+<td align="left">Ukwiki Other from Portal</td>
+<td align="right">0.913</td>
+<td align="right">556.998</td>
+<td align="right">607.009</td>
+<td align="right">0.158</td>
+<td align="center">(-15.72, 19.75)</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
-<td align="left">All Speakers</td>
-<td align="left">No control markets</td>
-<td align="right">0.975</td>
-<td align="right">654.089</td>
-<td align="right">700.528</td>
-<td align="right">-36.944</td>
-<td align="center">(-87.61, 48.56)</td>
+<td align="left">RuBNUkS</td>
+<td align="left">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.921</td>
+<td align="right">556.006</td>
+<td align="right">608.191</td>
+<td align="right">-2.489</td>
+<td align="center">(-14.07, 12.41)</td>
 </tr>
 <tr class="odd">
 <td align="left">3</td>
-<td align="left">All Speakers</td>
-<td align="left">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
-<td align="right">0.987</td>
-<td align="right">658.841</td>
-<td align="right">709.502</td>
-<td align="right">-18.179</td>
-<td align="center">(-55.98, 40.55)</td>
+<td align="left">RuBNUkS</td>
+<td align="left">Selected markets</td>
+<td align="right">0.940</td>
+<td align="right">557.370</td>
+<td align="right">613.904</td>
+<td align="right">-1.437</td>
+<td align="center">(-11.42, 9.93)</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
-<td align="left">All Speakers</td>
-<td align="left">Ukwiki Other from Portal</td>
-<td align="right">0.987</td>
-<td align="right">656.232</td>
-<td align="right">704.782</td>
-<td align="right">-5.429</td>
-<td align="center">(-54.39, 36.46)</td>
+<td align="left">RuBNUkS</td>
+<td align="left">Mix of matched &amp; selected markets</td>
+<td align="right">0.955</td>
+<td align="right">564.273</td>
+<td align="right">625.156</td>
+<td align="right">-1.740</td>
+<td align="center">(-11.64, 11.33)</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
-<td align="left">All Speakers in Ukraine</td>
-<td align="left">Ruwiki Main from Portal</td>
-<td align="right">0.945</td>
-<td align="right">621.577</td>
-<td align="right">670.127</td>
-<td align="right">-9.284</td>
-<td align="center">(-49.74, 46.10)</td>
+<td align="left">UkBNRuS</td>
+<td align="left">No control markets</td>
+<td align="right">0.977</td>
+<td align="right">620.017</td>
+<td align="right">667.854</td>
+<td align="right">1.707</td>
+<td align="center">(-23.63, 44.29)</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="left">All Speakers in Ukraine</td>
-<td align="left">No control markets</td>
-<td align="right">0.969</td>
-<td align="right">620.497</td>
-<td align="right">666.936</td>
-<td align="right">3.615</td>
-<td align="center">(-41.42, 42.37)</td>
+<td align="left">UkBNRuS</td>
+<td align="left">Ukwiki Main not from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.989</td>
+<td align="right">623.273</td>
+<td align="right">673.284</td>
+<td align="right">1.594</td>
+<td align="center">(-16.86, 23.83)</td>
 </tr>
 <tr class="odd">
 <td align="left">7</td>
-<td align="left">All Speakers in Ukraine</td>
-<td align="left">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
-<td align="right">0.977</td>
-<td align="right">623.987</td>
-<td align="right">674.648</td>
-<td align="right">-5.194</td>
-<td align="center">(-50.62, 32.12)</td>
+<td align="left">UkBNRuS in Ukraine</td>
+<td align="left">No control markets</td>
+<td align="right">0.966</td>
+<td align="right">608.024</td>
+<td align="right">655.860</td>
+<td align="right">-1.345</td>
+<td align="center">(-24.30, 21.03)</td>
 </tr>
 <tr class="even">
 <td align="left">8</td>
-<td align="left">All Speakers in Ukraine</td>
-<td align="left">Ukwiki Other from Portal</td>
-<td align="right">0.986</td>
-<td align="right">624.002</td>
-<td align="right">672.552</td>
-<td align="right">-4.837</td>
-<td align="center">(-29.75, 31.37)</td>
+<td align="left">UkBNRuS in Ukraine</td>
+<td align="left">Ukwiki Main not from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.983</td>
+<td align="right">609.551</td>
+<td align="right">659.562</td>
+<td align="right">-0.409</td>
+<td align="center">(-30.85, 15.44)</td>
 </tr>
 <tr class="odd">
 <td align="left">9</td>
-<td align="left">RuBNUkS</td>
-<td align="left">Matched markets with AR(1) &amp; seasonalities</td>
-<td align="right">0.900</td>
-<td align="right">560.570</td>
-<td align="right">649.227</td>
-<td align="right">-2.702</td>
-<td align="center">(-14.55, 28.64)</td>
+<td align="left">UkARuS</td>
+<td align="left">No control markets</td>
+<td align="right">0.978</td>
+<td align="right">580.570</td>
+<td align="right">628.406</td>
+<td align="right">-1.365</td>
+<td align="center">(-18.47, 18.43)</td>
 </tr>
 <tr class="even">
 <td align="left">10</td>
-<td align="left">RuBNUkS</td>
-<td align="left">Ukwiki Other from Portal</td>
-<td align="right">0.911</td>
-<td align="right">525.133</td>
-<td align="right">573.683</td>
-<td align="right">0.350</td>
-<td align="center">(-19.65, 19.93)</td>
+<td align="left">UkARuS</td>
+<td align="left">Ruwiki &amp; Ukwiki</td>
+<td align="right">0.986</td>
+<td align="right">586.019</td>
+<td align="right">640.379</td>
+<td align="right">0.901</td>
+<td align="center">(-15.82, 21.24)</td>
 </tr>
 <tr class="odd">
 <td align="left">11</td>
-<td align="left">RuBNUkS</td>
-<td align="left">Mix of matched &amp; selected markets</td>
-<td align="right">0.967</td>
-<td align="right">534.438</td>
-<td align="right">593.543</td>
-<td align="right">-2.542</td>
-<td align="center">(-12.95, 17.83)</td>
+<td align="left">UkARuS in Ukraine</td>
+<td align="left">No control markets</td>
+<td align="right">0.979</td>
+<td align="right">569.233</td>
+<td align="right">617.070</td>
+<td align="right">2.122</td>
+<td align="center">(-13.08, 17.06)</td>
 </tr>
 <tr class="even">
 <td align="left">12</td>
-<td align="left">RuBNUks in Ukraine</td>
-<td align="left">Ukraine’s Ukwiki Other from Portal</td>
-<td align="right">0.955</td>
-<td align="right">499.133</td>
-<td align="right">547.683</td>
-<td align="right">-1.819</td>
-<td align="center">(-10.18, 14.82)</td>
+<td align="left">UkARuS in Ukraine</td>
+<td align="left">Ruwiki &amp; Ukwiki</td>
+<td align="right">0.986</td>
+<td align="right">575.922</td>
+<td align="right">630.282</td>
+<td align="right">-4.231</td>
+<td align="center">(-18.03, 11.30)</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td align="left">All Speakers</td>
+<td align="left">No control markets</td>
+<td align="right">0.957</td>
+<td align="right">694.194</td>
+<td align="right">742.030</td>
+<td align="right">-43.092</td>
+<td align="center">(-87.62, 14.27)</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">All Speakers</td>
+<td align="left">Ruwiki Main from Portal</td>
+<td align="right">0.969</td>
+<td align="right">694.965</td>
+<td align="right">744.976</td>
+<td align="right">-33.263</td>
+<td align="center">(-86.00, 16.90)</td>
+</tr>
+<tr class="odd">
+<td align="left">15</td>
+<td align="left">All Speakers</td>
+<td align="left">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.980</td>
+<td align="right">697.172</td>
+<td align="right">749.358</td>
+<td align="right">-29.345</td>
+<td align="center">(-84.60, 39.56)</td>
+</tr>
+<tr class="even">
+<td align="left">16</td>
+<td align="left">All Speakers</td>
+<td align="left">Ukwiki Other from Portal</td>
+<td align="right">0.983</td>
+<td align="right">696.811</td>
+<td align="right">746.822</td>
+<td align="right">-16.427</td>
+<td align="center">(-71.52, 36.57)</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="left">All Speakers in Ukraine</td>
+<td align="left">Ruwiki Main from Portal</td>
+<td align="right">0.942</td>
+<td align="right">662.374</td>
+<td align="right">712.385</td>
+<td align="right">-2.224</td>
+<td align="center">(-43.47, 45.66)</td>
+</tr>
+<tr class="even">
+<td align="left">18</td>
+<td align="left">All Speakers in Ukraine</td>
+<td align="left">Ukwiki Other from Portal</td>
+<td align="right">0.966</td>
+<td align="right">663.672</td>
+<td align="right">713.683</td>
+<td align="right">-8.058</td>
+<td align="center">(-64.75, 71.73)</td>
+</tr>
+<tr class="odd">
+<td align="left">19</td>
+<td align="left">All Speakers in Ukraine</td>
+<td align="left">No control markets</td>
+<td align="right">0.973</td>
+<td align="right">664.458</td>
+<td align="right">712.295</td>
+<td align="right">-0.306</td>
+<td align="center">(-43.46, 27.58)</td>
+</tr>
+<tr class="even">
+<td align="left">20</td>
+<td align="left">All Speakers in Ukraine</td>
+<td align="left">Ruwiki Main from Portal &amp; Ukwiki Other from Portal</td>
+<td align="right">0.979</td>
+<td align="right">664.830</td>
+<td align="right">717.015</td>
+<td align="right">-2.787</td>
+<td align="center">(-32.64, 16.88)</td>
 </tr>
 </tbody>
 </table>
 <div class="caption">
+<p style="font-size: small; margin: 0; padding: 0;">
 <strong>Table 3</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment as estimated by the following models:
-<ol class="caption">
+</p>
+<ul class="caption">
 <li>
-…
+Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
 </li>
-</ol>
+<li>
+Russian Wikipedia Main Page pageviews from Portal and Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+</li>
+<li>
+Selected control time series:
+<ul class="caption">
+<li>
+Russian Wikipedia Main Page pageviews from Wikipedia.org Portal
+</li>
+<li>
+German Wikipedia Main Page pageviews from Wikipedia.org Portal
+</li>
+<li>
+Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+</li>
+<li>
+Ukrainian Wikipedia Main Page pageviews not from Wikipedia.org Portal
+</li>
+<li>
+Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot
+</li>
+</ul>
+</li>
+<li>
+Top 2 DTW-matched time series the selected control time series.
+</li>
+<li>
+No control time series.
+</li>
+</ul>
+<p style="font-size: small; margin: 0; padding: 0;">
+The different models were fit for the following the following populations:
+</p>
+<ul class="caption">
+<li>
+“RuBNUkS”: Russian-but-not-Ukrainian-speaking visitors. These are users who had Russian but not Ukrainian in their accept-language header, and are of primary interest in this analysis.
+</li>
+<li>
+“UkBNRuS”: Ukrainian-but-not-Russian-speaking visitors.
+</li>
+<li>
+“UkARuS”: Ukrainian-AND-Russian-speaking visitors.
+</li>
+<li>
+For “All Speakers”, we did not filter the pageviews by presence of Ukrainian or Russian in the accept-language header.
+</li>
+</ul>
+<p style="font-size: small; margin: 0; padding: 0;">
+We also fit versions of the models for pageviews that specifically came from IP addresses in Ukraine.
+</p>
 </div>
-<p>In Table 2 above, we list the top ?? models we chose and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as “there is a 95% probability that the true value of the effect is inside this interval”. The effect of the deployment was estimated to be …, but not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have sufficient evidence to say that the deployment had a positive or a negative effect on Ukrainian Wikipedia’s main page pageviews from Wikipedia.org Portal. …</p>
+<p>In Tables 2 and 3 above, we list several well-fitting models (high R<sup>2</sup>) and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as “there is a 95% probability that the true value of the effect is inside this interval”. Whether looking at models of Ukranian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal or the other models, the effect of the deployment was estimated to be positive in some models and negative in others, and not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have evidence to say that the deployment had a reliably positive or a negative impact.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -505,7 +714,7 @@ Executive Summary
 <div id="postamble" data-toggle="wy-nav-shift" class="status">
 <p class="author"><span class="glyphicon glyphicon-user"></span> Mikhail Popov (Analysis &amp; Report)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> Deborah Tankersley (Product Management)</p>
-<p class="date"><span class="glyphicon glyphicon-calendar"></span> 6 September 2016</p>
+<p class="date"><span class="glyphicon glyphicon-calendar"></span> 7 September 2016</p>
 </div>
 
 

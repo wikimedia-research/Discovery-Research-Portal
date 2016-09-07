@@ -19,5 +19,7 @@ pageviews$source <- paste(pageviews$site, pageviews$page, pageviews$from)
 pageviews$speaks <- "users who don't speak Russian or Ukrainian"
 pageviews$speaks[pageviews$speaks_ukrainian & !pageviews$speaks_russian] <- "users who speak Ukrainian"
 pageviews$speaks[!pageviews$speaks_ukrainian & pageviews$speaks_russian] <- "users who speak Russian"
-pageviews$speaks[pageviews$speaks_ukrainian & !pageviews$speaks_russian] <- "users who speak Ukrainian and Russian"
+pageviews$speaks[pageviews$speaks_ukrainian & pageviews$speaks_russian] <- "users who speak Ukrainian and Russian"
 pageviews$source_speaks <- paste0(pageviews$source, " (from ", pageviews$speaks, ")")
+
+pageviews <- pageviews[order(date, source, speaks, country), ]

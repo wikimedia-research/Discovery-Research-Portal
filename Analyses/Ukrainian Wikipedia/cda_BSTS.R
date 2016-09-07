@@ -116,7 +116,39 @@ model_list <- list(
 
   "All Speakers in Ukraine // Ruwiki Main from Portal" = make_model_2(pageviews[country == "Ukraine", ], "russian wikipedia (main page) from Wikipedia.org Portal"),
 
-  "All Speakers in Ukraine // Ukwiki Other from Portal" = make_model_2(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal")
+  "All Speakers in Ukraine // Ukwiki Other from Portal" = make_model_2(pageviews[country == "Ukraine", ], "ukrainian wikipedia (other pages) from Wikipedia.org Portal"),
+
+  "UkBNRuS // No control markets" = make_model_3(pageviews),
+
+  "UkBNRuS // Ukwiki Main not from Portal & Ukwiki Other from Portal" = make_model_3(pageviews, c(
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "UkBNRuS in Ukraine // No control markets" = make_model_3(pageviews[country == "Ukraine", ]),
+
+  "UkBNRuS in Ukraine // Ukwiki Main not from Portal & Ukwiki Other from Portal" = make_model_3(pageviews[country == "Ukraine", ], c(
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "UkARuS // No control markets" = make_model_4(pageviews),
+
+  "UkARuS // Ruwiki & Ukwiki" = make_model_4(pageviews, c(
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal",
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "russian wikipedia (other pages) from Wikipedia.org Portal"
+  )),
+
+  "UkARuS in Ukraine // No control markets" = make_model_4(pageviews[country == "Ukraine", ]),
+
+  "UkARuS in Ukraine // Ruwiki & Ukwiki" = make_model_4(pageviews[country == "Ukraine", ], c(
+    "ukrainian wikipedia (main page) not from Wikipedia.org Portal",
+    "ukrainian wikipedia (other pages) from Wikipedia.org Portal",
+    "russian wikipedia (main page) from Wikipedia.org Portal",
+    "russian wikipedia (other pages) from Wikipedia.org Portal"
+  ))
 
 )
 
@@ -133,12 +165,16 @@ prediction_errors$Date <- unique(pageviews$date)
   tidyr::gather(Model, `Cumulative Absolute Error`, -Date) %>%
   dplyr::mutate(Population = sub("(.*) // (.*)", "\\1", Model),
                 Model = sub("(.*) // (.*)", "\\2", Model)) %>%
+  dplyr::filter(Population == "RuBNUkS") %>%
   ggplot(aes(x = Date, y = `Cumulative Absolute Error`, color = Model)) +
   geom_line() +
-  facet_wrap(~ Population, ncol = 1, scales = "free_y") +
+  scale_color_manual(values = c("#00b769", "#d354be", "#436a00", "#0047a7", "#ffac3e", "#00dfe0", "#e5356f", "#01845d", "#ff8c80", "#ad5700"),
+                     guide = guide_legend(ncol = 3),
+                     limits = sub("(.*) // (.*)", "\\2", grep("RuBNUkS //", names(sort(tail(dplyr::select(prediction_errors, -Date), 1), decreasing = TRUE)), fixed = TRUE, value = TRUE))) +
+  # facet_wrap(~ Population, ncol = 1, scales = "free_y") +
   ggthemes::theme_tufte(12, "Gill Sans") +
   theme(legend.position = "bottom") +
-  ggtitle("Cumulative absolute error over time by model and population",
+  ggtitle("Cumulative absolute error (in pageviews) over time by model and population",
           subtitle = "Bayesian structural time series (BSTS) models")
 } %>% ggsave("cumulative_absolute_error.png", plot = ., path = figures_dir,
              width = 18, height = 6, dpi = 300)

@@ -31,14 +31,20 @@ div.caption, p.caption {
   text-align: left;
 }
 
+div.caption {
+  margin-bottom: 0.3in;
+}
+
 ol.caption, ul.caption {
   font-family: "Gill Sans", "Open Sans", sans-serif;
   font-size: small;
   text-align: left;
+  margin-bottom: 0 !important;
 }
 
 ol.caption li, ul.caption li {
   margin-left: 0.25in;
+  margin-bottom: 0;
 }
 
 table {
@@ -65,7 +71,10 @@ div#abstract h2 {
 }
 
 div#abstract p {
+  font-size: small;
   text-align: left;
+  margin: 0;
+  text-indent: 0.25in;
 }
 
 .figure-left {

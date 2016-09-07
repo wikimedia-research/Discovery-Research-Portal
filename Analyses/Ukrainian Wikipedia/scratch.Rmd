@@ -1,0 +1,34 @@
+<p class = "caption"><strong>Figure 3</strong> (below, interactive): Cumulative absolute error over time by model. ([Non-interactive version.](figures/cumulative_absolute_error.png)).</p>
+
+```{r prediction_error_dygraph, fig.width = 8, fig.height = 4}
+## Of primary interest:
+top_models_idx <- lapply(model_list[which(grepl("RuBNUkS //", names(model_list), fixed = TRUE))], function(model) {
+  summary(model)$rsquare
+}) %>% unlist %>% { which(. > 0.7) } %>% unname
+
+if (length(top_models_idx) == 10) {
+  colours <- c("#00b769", "#d354be", "#436a00", "#0047a7", "#ffac3e", "#00dfe0", "#e5356f", "#01845d", "#ff8c80", "#ad5700")
+# ^ made with http://tools.medialab.sciences-po.fr/iwanthue/
+# Settings:
+# - Color space is 'colorblind friendly'
+# - 10 colors
+# - hard (force vector) instead of k-means
+} else if (length(top_models_idx) == 7) {
+  colours <- RColorBrewer::brewer.pal(8, "Set1")[-6]
+} else if (length(top_models_idx) == 8) {
+  colours <- RColorBrewer::brewer.pal(9, "Set1")[-6]
+} else {
+  colours <- polloi::smart_palette(length(top_models_idx))
+}
+
+prediction_errors %>%
+  { .[c(names(sort(tail(., 1)[, top_models_idx], decreasing = TRUE)), "Date")] } %>%
+  { names(.) <- sub("(.*) // (.*)", "\\2", names(.)); . } %>%
+  { xts::xts(.[, 1:(ncol(.)-1)], order.by = .$Date) } %>%
+  dygraph(main = "Models of Ukrainian Wikipedia's Main Page pageviews from Russian-but-not-Ukrainian-speaking users", ylab = "Cumulative Absolute Error", xlab = "Date") %>%
+  dyOptions(colors = colours, labelsKMB = TRUE) %>%
+  dyLegend(labelsSeparateLines = TRUE, labelsDiv = "prediction_error_legend", show = "always") %>%
+  dyRangeSelector(fillColor = "gray40", strokeColor = "black") # %>% dyCSS(path("dygraph.css"))
+```
+
+<div id = "prediction_error_legend"></div>
