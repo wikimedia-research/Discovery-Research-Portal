@@ -1,9 +1,13 @@
 ---
 title: "Wikipedia.org Portal and Ukrainian Wikipedia"
+subtitle: "2nd Draft"
 author:
-- Mikhail Popov (Analysis & Report)
-- Deborah Tankersley (Product Management)
-date: "7 September 2016"
+- <a href = "https://meta.wikimedia.org/wiki/User:MPopov_(WMF)">Mikhail Popov</a> (Analysis & Report)
+- <a href = "https://meta.wikimedia.org/wiki/User:DTankersley_(WMF)">Deb Tankersley</a> (Product Management)
+- <a href = "https://meta.wikimedia.org/wiki/User:Deskana_(WMF)">Dan Garry</a> (Review)
+- <a href = "https://meta.wikimedia.org/wiki/User:CXie_(WMF)">Chelsy Xie</a> (Review)
+- <a href = "https://meta.wikimedia.org/wiki/User:TJones_(WMF)">Trey Jones</a> (Review)
+date: "9 September 2016"
 output:
   rmdformats::readthedown:
     highlight: kate
@@ -11,7 +15,6 @@ output:
     fig_caption: yes
     self_contained: no
     mathjax: null
-geometry: margin=1in
 fontsize: 12pt
 ---
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
@@ -35,7 +38,7 @@ path <- function(x) {
 <div id = "abstract">
 <h2>Executive Summary</h2>
 <p>On 16 August 2016, Discovery deployed a major design change to the Wikipedia.org Portal page. As of the deployment, the links to Wikipedia in 200+ languages have been put into a modal drop-down to make the page cleaner and less overwhelming to new visitors. Before that, Discovery added language detection to the page so that users (who have their language preferences set in their browser) would see their language around the Wikipedia globe logo, without having to look for it in the long list of languages. Discovery received some criticism about the change, with some users hypothesizing that the change may have resulted in a decrease to Ukrainian Wikipedia's pageviews because some visitors may have Russian set as a language, but not Ukrainian.</p>
-<p>In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that's where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the effect of the deployment is not statistically significant. In other words, we do have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from Wikipedia.org Portal.</p>
+<p>In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that's where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the effect of the deployment is not statistically significant. In other words, we do not have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from Wikipedia.org Portal.</p>
 </div>
 
 <p style = "text-align: center;">
@@ -135,7 +138,7 @@ rownames(quantiles) <- 1:nrow(quantiles)
 knitr::kable(quantiles, format = "markdown", digits = 3, align = c("l", "r", "r", "r", "r", "c"), row.names = TRUE)
 ```
 
-<div class = "caption"><strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate & 95% credible interval of the effect of Wikipedia.org Portal's secondary link collapse patch deployment from the top BSTS models of Ukrainian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking users ("RuBNUkS") -- in general and specifically pageviews from users with IP addresses in Ukraine. All of the following models included weekly and monthly seasonalities and AR(1) components: <ol class = "caption"><li>Russian Wikipedia Main Page pageviews from Wikipedia.org Portal</li><li>No control time series.</li><li>DTW-matched time series.</li><li>Ukrainian Wikipedia non-Main pageviews from Wikipedia.org Portal</li><li>1 and 4</li><li>The following control time series:</li><li>The following control time series:</li><li>Russian Wikipedia Main Page pageviews from Wikipedia.org Portal visitors in Ukraine</li><li>No control time series.</li></ol></div>
+<div class = "caption"><strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate & 95% credible interval of the effect of Wikipedia.org Portal's secondary link collapse patch deployment from the top BSTS models of Ukrainian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking users ("RuBNUkS") -- in general and specifically pageviews from users with IP addresses in Ukraine. All of the following models included weekly and monthly seasonalities and AR(1) components: <ol class = "caption"><li>Russian Wikipedia Main Page pageviews from Wikipedia.org Portal</li><li>No control time series.</li><li>DTW-matched time series.</li><li>Ukrainian Wikipedia non-Main pageviews from Wikipedia.org Portal</li><li>1 and 4</li><li>The following control time series:<ul class = "caption"><li>Russian Wikipedia Main Page pageviews from Wikipedia.org Portal</li><li>German Wikipedia Main Page pageviews from Wikipedia.org Portal</li><li>Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal</li><li>Ukrainian Wikipedia Main Page pageviews not from Wikipedia.org Portal</li><li>Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot</li></ul></li><li>Top 2 DTW-matched time series as controls, along with the selection listed in 6.</li><li>Russian Wikipedia Main Page pageviews from Wikipedia.org Portal visitors in Ukraine</li><li>No control time series.</li></ol></div>
 
 ```{r top_models_and_colors}
 top_models_idx <- lapply(model_list, function(model) {
