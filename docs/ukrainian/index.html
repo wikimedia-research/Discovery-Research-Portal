@@ -11,11 +11,12 @@
 <meta name="author" content="Mikhail Popov (Analysis &amp; Report)" />
 <meta name="author" content="Deb Tankersley (Product Management)" />
 <meta name="author" content="Dan Garry (Review)" />
-<meta name="author" content="Chelsy Xie (Review)" />
 <meta name="author" content="Trey Jones (Review)" />
+<meta name="author" content="Chelsy Xie (Review)" />
 
+<meta name="date" content="2016-09-13" />
 
-<title>Wikipedia.org Portal and Ukrainian Wikipedia</title>
+<title>The Wikipedia.org Portal and Ukrainian Wikipedia</title>
 
 <script src="index_files/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -40,13 +41,13 @@
 </nav>
 
 <div id="header">
-<h1 class="title">Wikipedia.org Portal and Ukrainian Wikipedia</h1>
-<h1 class="subtitle">2nd Draft</h1>
+<h1 class="title">The Wikipedia.org Portal and Ukrainian Wikipedia</h1>
+<h1 class="subtitle">3rd Draft</h1>
 </div>
 
 
 <div id="table-of-contents">
-    <h2><a href="#content">Wikipedia.org Portal and Ukrainian Wikipedia</a></h2>
+    <h2><a href="#content">The Wikipedia.org Portal and Ukrainian Wikipedia</a></h2>
     <div id="text-table-of-contents">
       <ul>
       <li><a href="#background">Background</a></li>
@@ -63,10 +64,10 @@
 Executive Summary
 </h2>
 <p>
-On 16 August 2016, Discovery deployed a major design change to the Wikipedia.org Portal page. As of the deployment, the links to Wikipedia in 200+ languages have been put into a modal drop-down to make the page cleaner and less overwhelming to new visitors. Before that, Discovery added language detection to the page so that users (who have their language preferences set in their browser) would see their language around the Wikipedia globe logo, without having to look for it in the long list of languages. Discovery received some criticism about the change, with some users hypothesizing that the change may have resulted in a decrease to Ukrainian Wikipedia’s pageviews because some visitors may have Russian set as a language, but not Ukrainian.
+On 16 August 2016, Discovery deployed a major design change to the Wikipedia.org Portal page. As of the deployment, the links to Wikipedia in 200+ languages have been put into a modal drop-down to make the page cleaner and less overwhelming to new visitors. Before that, Discovery added browser language preferences detection (via <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language">accept-language header</a>) to the page so that users (who have their language preferences set in their browser) would see their language around the Wikipedia globe logo, without having to look for it in the long list of languages. Discovery received some criticism about the change, with some users hypothesizing that the change may have resulted in a decrease to Ukrainian Wikipedia’s pageviews because some visitors may have Russian set as a language, but not Ukrainian.
 </p>
 <p>
-In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that’s where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the effect of the deployment is not statistically significant. In other words, we do not have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from Wikipedia.org Portal.
+In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that’s where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to the Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the deployment did not have a statistically significant effect. In other words, we do not have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from the Wikipedia.org Portal.
 </p>
 </div>
 <p style="text-align: center;">
@@ -74,12 +75,12 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 </p>
 <div id="background" class="section level2">
 <h2>Background</h2>
-<p>For the past several months, Discovery’s Wikipedia.org Portal team has been working on redesigning the (<a href="https://wikipedia.org">wikipedia.org</a>) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the <a href="https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0">final major patch</a> (for the next foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the “Read in your language” button (see Figure <a href="figures/portal_a.png">1a</a> and <a href="figures/portal_b.png">1b</a> below).</p>
+<p>For the past several months, Discovery’s the Wikipedia.org Portal team has been working on redesigning the (<a href="https://wikipedia.org">wikipedia.org</a>) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the <a href="https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0">final major patch</a> (for the foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the “Read in your language” button (see Figure <a href="figures/portal_a.png">1a</a> and <a href="figures/portal_b.png">1b</a> below).</p>
 <div>
 <div style="float: left; width: 31%; margin-right: 2%">
-<a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting Wikipedia.org Portal with Russian as the preferred language."></a>
+<a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting the Wikipedia.org Portal with Russian as the preferred language."></a>
 <p class="caption">
-<strong>Figure 1 (a)</strong>: Default experience when visiting Wikipedia.org Portal with Russian as the preferred language. Our deployment on August 16th, 2016, collapsed the language links into a hidden-by-default modal in an effort to make the page’s design cleaner and less overwhelming to new visitors.
+<strong>Figure 1 (a)</strong>: Default experience when visiting the Wikipedia.org Portal with Russian as the preferred language. Our deployment on August 16th, 2016, collapsed the language links into a hidden-by-default modal in an effort to make the page’s design cleaner and less overwhelming to new visitors.
 </p>
 </div>
 <div style="float: left; width: 31%; margin-left: 2%">
@@ -98,40 +99,37 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 <div style="clear:left;">
 
 </div>
-<p>Per <a href="https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy">some comments in a thread on mediawiki.org</a>, there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users browsers being configured to Russian, thereby burying the link to the <a href="https://uk.wikipedia.org/">Ukrainian Wikipedia</a> (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia’s <a href="https://uk.wikipedia.org/wiki/Головна_сторінка">main page</a> from Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.</p>
+<p>Per <a href="https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy">some comments in a thread on mediawiki.org</a>, there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users’ browsers being configured to Russian, thereby burying the link to the <a href="https://uk.wikipedia.org/">Ukrainian Wikipedia</a> (shown in Figure 1). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia’s <a href="https://uk.wikipedia.org/wiki/">main page</a> from the Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on the Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.</p>
 <div class="figure">
-<img src="figures/pageviews.png" alt="Figure 2: Pageviews to Ukrainian Wikipedia main page and other pages. (Full resolution version.)" />
-<p class="caption"><strong>Figure 2</strong>: Pageviews to Ukrainian Wikipedia main page and other pages. (<a href="figures/pageviews.png">Full resolution version</a>.)</p>
+<a href = "figures/pageviews.png" title = "Click to view the full resolution version."><img src = "figures/pageviews.png" alt = "Figure 2: Pageviews to Ukrainian Wikipedia main page and other pages."></a>
+<p class="caption">
+<strong>Figure 2</strong>: Pageviews (on a log scale) to Ukrainian Wikipedia main page and other pages from users with Ukrainian IP addresses and users with non-Ukrainian IP addresses.
+</p>
 </div>
 </div>
 <div id="methods" class="section level2">
 <h2>Methods</h2>
-<p>We used <a href="https://en.wikipedia.org/wiki/Bayesian_structural_time_series">Bayesian structural time series</a> (BSTS) to model Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal, using the R package “bsts” (Scott et al., 2016). See <a href="http://doi.org/10.1504/ijmmno.2014.059942">[1]</a>, <a href="http://doi.org/10.1214/14-AOAS788">[2]</a>, and <a href="https://CRAN.R-project.org/package=bsts">[7]</a> for more details.</p>
+<p>We used <a href="https://en.wikipedia.org/wiki/Bayesian_structural_time_series">Bayesian structural time series</a> (BSTS) to model Ukrainian Wikipedia main page pageviews from the Wikipedia.org Portal, using the R package “bsts” (Scott et al., 2016). See <a href="#ref-1">[1]</a>, <a href="#ref-2">[2]</a>, and <a href="#ref-7">[7]</a> for more details.</p>
 <p>We tried multiple models, including different combinations of:</p>
 <ul>
 <li>seasonality (weekly &amp; monthly) components,</li>
 <li>a <a href="https://en.wikipedia.org/wiki/Autoregressive_model">one-back autoregressive</a> (AR1) component,</li>
-<li>specific pageview time series as control time series (e.g. Russian Wikipedia Main Page pageviews from Wikipedia.org Portal, Ukrainian Wikipedia Main Page pageviews <em>not</em> from Wikipedia.org Portal),</li>
+<li>specific pageview time series as control time series (e.g. Russian Wikipedia Main Page pageviews from the Wikipedia.org Portal, Ukrainian Wikipedia Main Page pageviews <em>not</em> from the Wikipedia.org Portal),</li>
 <li><a href="https://en.wikipedia.org/wiki/Dynamic_time_warping">dynamic time warping-matched</a> pageview time series (“markets”) as control time series, such as Ukrainian Wikitionary (Main Page) pageviews from a Wikimedia project/tool/bot (which had the 2<sup>nd</sup> highest similarity).</li>
 <li>a “mix of markets” that included similar markets and markets with the <a href="http://google.github.io/CausalImpact/CausalImpact.html#which-predictor-variables-were-used-in-the-model">highest posterior inclusion probability</a> via <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/#bayesian-variable-selection">Bayesian variable selection</a>.</li>
 </ul>
-<p>When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set <span class="math inline">\(Z_t = \beta^T X_t\)</span> and <span class="math inline">\(\alpha_t = 1\)</span>, so that each <span class="math inline">\(p\)</span>-th covariate had a coefficient <span class="math inline">\(\beta_p\)</span>. All models included an indicator variable <span class="math inline">\(x_{\text{deployment},t}\)</span> of Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that <span class="math inline">\(x_{\text{deployment},t} = 0\)</span> when <span class="math inline">\(t\)</span> is before 16 August 2016, and <span class="math inline">\(x_{\text{deployment},t} = 1\)</span> when <span class="math inline">\(t\)</span> is 16 August 2016 or after, so that <span class="math inline">\(\beta_{\text{deployment}}\)</span> is the effect of the deployment on Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal after accounting for variance in pageviews using various control time series.</p>
+<p>When including control time series (e.g. Ukrainian Wikipedia pageviews from a Wikimedia site but not the Wikipedia.org Portal), we used static regression (the coefficients were assumed to not vary over time). Specifically, we set <span class="math inline">\(Z_t = \beta^T X_t\)</span> and <span class="math inline">\(\alpha_t = 1\)</span>, so that each <span class="math inline">\(p\)</span>-th covariate had a coefficient <span class="math inline">\(\beta_p\)</span>. All models included an indicator variable <span class="math inline">\(x_{\text{deployment},t}\)</span> of the Wikipedia.org Portal secondary link collapse patch deployment as a covariate, meaning that <span class="math inline">\(x_{\text{deployment},t} = 0\)</span> when <span class="math inline">\(t\)</span> is before 16 August 2016, and <span class="math inline">\(x_{\text{deployment},t} = 1\)</span> when <span class="math inline">\(t\)</span> is 16 August 2016 or after, so that <span class="math inline">\(\beta_{\text{deployment}}\)</span> is the effect of the deployment on Ukrainian Wikipedia main page pageviews from the Wikipedia.org Portal after accounting for variance in pageviews using various control time series.</p>
 <div class="figure">
 <img src="figures/bsts_aggregate_state_contribution_plots-1.png" alt="**Figure 3**: Plots of the 28 BSTS models' predictions (in black and gray) with actual pageviews (blue circles) for comparison. ([Full resolution version](figures/bsts_aggregate_state_contribution_plots-1.png))" width="1536" />
 <p class="caption">
 <strong>Figure 3</strong>: Plots of the 28 BSTS models’ predictions (in black and gray) with actual pageviews (blue circles) for comparison. (<a href="figures/bsts_aggregate_state_contribution_plots-1.png">Full resolution version</a>)
 </p>
 </div>
-<p>Twenty different models were considered (see Figure 2) and 9 were chosen according to the models’ <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a> (proportion by which the residual variance is less than the variance of the original observations).</p>
+<p>Twenty-eight different models (but only twelve dealt with Russian-but-not-Ukrainian-speaking populations) were considered (see Figure 3) and nine were chosen according to the models’ <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a> (proportion by which the residual variance is less than the variance of the original observations).</p>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
 <table>
-<colgroup>
-<col width="75%" />
-<col width="10%" />
-<col width="13%" />
-</colgroup>
 <thead>
 <tr class="header">
 <th align="left">Control</th>
@@ -140,121 +138,21 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">russian wikivoyage (other pages) from elsewhere</td>
-<td align="right">0.114</td>
-<td align="right">0.188</td>
-</tr>
-<tr class="even">
-<td align="left">english wikiversity (main page) direct (e.g. bookmark or homepage)</td>
-<td align="right">0.119</td>
-<td align="right">0.379</td>
-</tr>
-<tr class="odd">
-<td align="left">ukrainian wikiquote (other pages) from a search engine</td>
-<td align="right">0.119</td>
-<td align="right">0.294</td>
-</tr>
-<tr class="even">
-<td align="left">russian wikinews (other pages) from a search engine</td>
-<td align="right">0.182</td>
-<td align="right">0.222</td>
-</tr>
-<tr class="odd">
-<td align="left">german wikinews (other pages) from a search engine</td>
-<td align="right">0.220</td>
-<td align="right">0.091</td>
-</tr>
-<tr class="even">
-<td align="left">russian wikinews (main page) from a Wikimedia project/tool/bot</td>
-<td align="right">0.290</td>
-<td align="right">0.337</td>
-</tr>
-<tr class="odd">
-<td align="left">english wikibooks (main page) from elsewhere</td>
-<td align="right">0.339</td>
-<td align="right">0.387</td>
-</tr>
-<tr class="even">
-<td align="left">ukrainian wiktionary (other pages) from a Wikimedia project/tool/bot</td>
-<td align="right">0.417</td>
-<td align="right">0.062</td>
-</tr>
-<tr class="odd">
-<td align="left">ukrainian wikisource (other pages) from a search engine</td>
-<td align="right">0.459</td>
-<td align="right">0.248</td>
-</tr>
-<tr class="even">
-<td align="left">ukrainian wikisource (other pages) from a Wikimedia project/tool/bot</td>
-<td align="right">0.476</td>
-<td align="right">-0.034</td>
-</tr>
-<tr class="odd">
-<td align="left">english wikinews (main page) from a search engine</td>
-<td align="right">0.522</td>
-<td align="right">-0.043</td>
-</tr>
-<tr class="even">
-<td align="left">english wiktionary (main page) direct (e.g. bookmark or homepage)</td>
-<td align="right">0.590</td>
-<td align="right">0.323</td>
-</tr>
-<tr class="odd">
-<td align="left">russian wikisource (main page) from a Wikimedia project/tool/bot</td>
-<td align="right">0.597</td>
-<td align="right">-0.140</td>
-</tr>
-<tr class="even">
-<td align="left">russian wikiquote (main page) from a Wikimedia project/tool/bot</td>
-<td align="right">0.634</td>
-<td align="right">-0.009</td>
-</tr>
-<tr class="odd">
-<td align="left">ukrainian wikibooks (other pages) from a search engine</td>
-<td align="right">0.636</td>
-<td align="right">0.122</td>
-</tr>
-<tr class="even">
-<td align="left">russian wikibooks (main page) from a Wikimedia project/tool/bot</td>
-<td align="right">0.648</td>
-<td align="right">-0.120</td>
-</tr>
-<tr class="odd">
-<td align="left">english wikinews (other pages) from elsewhere</td>
-<td align="right">0.658</td>
-<td align="right">0.104</td>
-</tr>
-<tr class="even">
-<td align="left">english wikibooks (main page) from a search engine</td>
-<td align="right">0.672</td>
-<td align="right">0.120</td>
-</tr>
-<tr class="odd">
-<td align="left">german wikinews (other pages) from elsewhere</td>
-<td align="right">0.698</td>
-<td align="right">0.072</td>
-</tr>
-<tr class="even">
-<td align="left">russian wikivoyage (main page) direct (e.g. bookmark or homepage)</td>
-<td align="right">0.720</td>
-<td align="right">0.343</td>
-</tr>
 </tbody>
 </table>
 <p class="caption">
-<strong>Table 1</strong>: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from Wikipedia.org Portal. These are the time series used as controls in models that use “matched markets”.
+<strong>Table 1</strong>: Top 20 most similar pageviews to Ukrainian Wikipedia main page pageviews from the Wikipedia.org Portal. These are the time series used as controls in models that use “matched markets”.
 </p>
-<table>
+<table style="width:100%;">
 <colgroup>
-<col width="3%" />
-<col width="15%" />
-<col width="40%" />
+<col width="2%" />
+<col width="14%" />
+<col width="38%" />
 <col width="5%" />
 <col width="6%" />
 <col width="6%" />
-<col width="8%" />
-<col width="13%" />
+<col width="12%" />
+<col width="12%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -264,8 +162,8 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 <th align="right">R²</th>
 <th align="right">AIC</th>
 <th align="right">BIC</th>
-<th align="center">Estimate</th>
-<th align="left">95% CI</th>
+<th align="center">Estimate (PVs)</th>
+<th align="left">95% CI (PVs)</th>
 </tr>
 </thead>
 <tbody>
@@ -362,10 +260,10 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 </tbody>
 </table>
 <div class="caption">
-<strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment from the top BSTS models of Ukrainian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking users (“RuBNUkS”) – in general and specifically pageviews from users with IP addresses in Ukraine. All of the following models included weekly and monthly seasonalities and AR(1) components:
+<strong>Table 2</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate (in pageviews) &amp; 95% credible interval of the effect of the Wikipedia.org Portal’s secondary link collapse patch deployment from the top BSTS models of Ukrainian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking users (“RuBNUkS”) – in general and specifically pageviews from users with IP addresses in Ukraine. All of the following models included weekly and monthly seasonalities and AR(1) components:
 <ol class="caption">
 <li>
-Russian Wikipedia Main Page pageviews from Wikipedia.org Portal
+Russian Wikipedia Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
 No control time series.
@@ -374,7 +272,7 @@ No control time series.
 DTW-matched time series.
 </li>
 <li>
-Ukrainian Wikipedia non-Main pageviews from Wikipedia.org Portal
+Ukrainian Wikipedia non-Main pageviews from the Wikipedia.org Portal
 </li>
 <li>
 1 and 4
@@ -383,16 +281,16 @@ Ukrainian Wikipedia non-Main pageviews from Wikipedia.org Portal
 The following control time series:
 <ul class="caption">
 <li>
-Russian Wikipedia Main Page pageviews from Wikipedia.org Portal
+Russian Wikipedia Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-German Wikipedia Main Page pageviews from Wikipedia.org Portal
+German Wikipedia Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+Ukrainian Wikipedia non-Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-Ukrainian Wikipedia Main Page pageviews not from Wikipedia.org Portal
+Ukrainian Wikipedia Main Page pageviews not from the Wikipedia.org Portal
 </li>
 <li>
 Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot
@@ -403,23 +301,23 @@ Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot
 Top 2 DTW-matched time series as controls, along with the selection listed in 6.
 </li>
 <li>
-Russian Wikipedia Main Page pageviews from Wikipedia.org Portal visitors in Ukraine
+Russian Wikipedia Main Page pageviews from the Wikipedia.org Portal visitors in Ukraine
 </li>
 <li>
 No control time series.
 </li>
 </ol>
 </div>
-<table style="width:100%;">
+<table>
 <colgroup>
 <col width="2%" />
-<col width="18%" />
-<col width="40%" />
-<col width="5%" />
+<col width="17%" />
+<col width="38%" />
+<col width="4%" />
 <col width="6%" />
 <col width="6%" />
-<col width="7%" />
-<col width="13%" />
+<col width="11%" />
+<col width="12%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -429,8 +327,8 @@ No control time series.
 <th align="right">R²</th>
 <th align="right">AIC</th>
 <th align="right">BIC</th>
-<th align="right">Estimate</th>
-<th align="center">95% CI</th>
+<th align="right">Estimate (PVs)</th>
+<th align="center">95% CI (PVs)</th>
 </tr>
 </thead>
 <tbody>
@@ -638,29 +536,29 @@ No control time series.
 </table>
 <div class="caption">
 <p style="font-size: small; margin: 0; padding: 0;">
-<strong>Table 3</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate &amp; 95% credible interval of the effect of Wikipedia.org Portal’s secondary link collapse patch deployment as estimated by the following models:
+<strong>Table 3</strong>: Summary metrics — <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">R<sup>2</sup></a>, <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Akaike information criterion (AIC)</a>, <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Schwarz criterion (BIC)</a> — and point estimate (in pageviews) &amp; 95% credible interval of the effect of the Wikipedia.org Portal’s secondary link collapse patch deployment as estimated by the following models:
 </p>
 <ul class="caption">
 <li>
-Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+Ukrainian Wikipedia non-Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-Russian Wikipedia Main Page pageviews from Portal and Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+Russian Wikipedia Main Page pageviews from Portal and Ukrainian Wikipedia non-Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
 Selected control time series:
 <ul class="caption">
 <li>
-Russian Wikipedia Main Page pageviews from Wikipedia.org Portal
+Russian Wikipedia Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-German Wikipedia Main Page pageviews from Wikipedia.org Portal
+German Wikipedia Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-Ukrainian Wikipedia non-Main Page pageviews from Wikipedia.org Portal
+Ukrainian Wikipedia non-Main Page pageviews from the Wikipedia.org Portal
 </li>
 <li>
-Ukrainian Wikipedia Main Page pageviews not from Wikipedia.org Portal
+Ukrainian Wikipedia Main Page pageviews not from the Wikipedia.org Portal
 </li>
 <li>
 Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot
@@ -668,7 +566,7 @@ Ukrainian Wikipedia Main Page pageviews from a Wikimedia project/tool/bot
 </ul>
 </li>
 <li>
-Top 2 DTW-matched time series the selected control time series.
+Top 2 DTW-matched time series and selected control time series (see list above).
 </li>
 <li>
 No control time series.
@@ -688,42 +586,72 @@ The different models were fit for the following the following populations:
 “UkARuS”: Ukrainian-AND-Russian-speaking visitors.
 </li>
 <li>
-For “All Speakers”, we did not filter the pageviews by presence of Ukrainian or Russian in the accept-language header.
+For all visitors (“All Speakers”), we did not filter the pageviews by presence of Ukrainian or Russian in the accept-language header.
 </li>
 </ul>
 <p style="font-size: small; margin: 0; padding: 0;">
 We also fit versions of the models for pageviews that specifically came from IP addresses in Ukraine.
 </p>
 </div>
-<p>In Tables 2 and 3 above, we list several well-fitting models (high R<sup>2</sup>) and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as “there is a 95% probability that the true value of the effect is inside this interval”. Whether looking at models of Ukranian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking visitors to Wikipedia.org Portal or the other models, the effect of the deployment was estimated to be positive in some models and negative in others, and not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have evidence to say that the deployment had a reliably positive or a negative impact.</p>
+<p>In Tables 2 and 3 above, we list several well-fitting models (high R<sup>2</sup>) and show the estimated effect of the deployment. Also included are the 95% credible intervals, which can be interpreted as “there is a 95% probability that the true value of the effect is inside this interval”. Whether looking at models of Ukranian Wikipedia Main Page pageviews from Russian-but-not-Ukrainian-speaking visitors to the Wikipedia.org Portal or the other models, the effect of the deployment was estimated to be positive in some models and negative in others, and not statistically significant (95% credible interval included 0) in all of them, meaning that we do not have evidence to say that the deployment had a reliably positive or a negative impact.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
 <div id="reading" class="section level3">
 <h3>Reading</h3>
-<ol style="list-style-type: decimal">
-<li>Scott, S. L., &amp; Varian, H. R. (2014). Predicting the present with bayesian structural time series. International Journal of Mathematical Modelling and Numerical Optimisation, 5(1/2), 4. <a href="http://doi.org/10.1504/ijmmno.2014.059942" class="uri">http://doi.org/10.1504/ijmmno.2014.059942</a></li>
-<li>Brodersen, K. H., Gallusser, F., &amp; Koehler, J. (2015). Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics. <a href="http://doi.org/10.1214/14-AOAS788" class="uri">http://doi.org/10.1214/14-AOAS788</a>, <a href="http://research.google.com/pubs/pub41854.html" class="uri">http://research.google.com/pubs/pub41854.html</a></li>
-<li>Larsen, K. (2016, January 13). Making Causal Impact Analysis Easy [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/" class="uri">http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/</a></li>
-<li>Larsen, K. (2016, April 21). Sorry ARIMA, but I’m Going Bayesian [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/" class="uri">http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/</a></li>
+<ol>
+<li id="ref-1">
+Scott, S. L., and Varian, H. R. (2014). Predicting the present with bayesian structural time series. International Journal of Mathematical Modelling and Numerical Optimisation, 5(1/2), 4. <a href="http://doi.org/10.1504/ijmmno.2014.059942" class="uri">http://doi.org/10.1504/ijmmno.2014.059942</a>
+</li>
+<li id="ref-2">
+Brodersen, K. H., Gallusser, F., and Koehler, J. (2015). Inferring causal impact using Bayesian structural time-series models. The Annals of Applied Statistics. <a href="http://doi.org/10.1214/14-AOAS788" class="uri">http://doi.org/10.1214/14-AOAS788</a>, <a href="http://research.google.com/pubs/pub41854.html" class="uri">http://research.google.com/pubs/pub41854.html</a>
+</li>
+<li id="ref-3">
+Larsen, K. (2016, January 13). Making Causal Impact Analysis Easy [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/" class="uri">http://multithreaded.stitchfix.com/blog/2016/01/13/market-watch/</a>
+</li>
+<li id="ref-4">
+Larsen, K. (2016, April 21). Sorry ARIMA, but I’m Going Bayesian [Blog post]. Retrieved from <a href="http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/" class="uri">http://multithreaded.stitchfix.com/blog/2016/04/21/forget-arima/</a>
+</li>
 </ol>
 </div>
 <div id="software" class="section level3">
 <h3>Software</h3>
-<ol start="5" style="list-style-type: decimal">
-<li>R Core Team (2016). <em>R: A Language and Environment for Statistical Computing</em>. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a></li>
-<li>Dowle M, Srinivasan A, Short T, Saporta SLwcfR and Antonyan E (2015). <em>data.table: Extension of Data.frame</em>. R package version 1.9.6, <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a></li>
-<li>Scott SL (2016). <em>bsts: Bayesian Structural Time Series</em>. R package version 0.6.5, <a href="https://CRAN.R-project.org/package=bsts" class="uri">https://CRAN.R-project.org/package=bsts</a></li>
-<li>Giorgino T (2009). “Computing and Visualizing Dynamic Time Warping Alignments in R: The dtw Package.” <em>Journal of Statistical Software</em>, <em>31</em>(7), pp. 1-24. <a href="http://www.jstatsoft.org/v31/i07/" class="uri">http://www.jstatsoft.org/v31/i07/</a></li>
-<li>Tormene P, Giorgino T, Quaglini S and Stefanelli M (2008). “Matching Incomplete Time Series with Dynamic Time Warping: An Algorithm and an Application to Post-Stroke Rehabilitation.” <em>Artificial Intelligence in Medicine</em>, <em>45</em>(1), pp. 11-34. doi: 10.1016/j.artmed.2008.11.007 (URL: <a href="http://doi.org/10.1016/j.artmed.2008.11.007" class="uri">http://doi.org/10.1016/j.artmed.2008.11.007</a>).</li>
-<li>Kim L (2015). <em>MarketMatching: Market matching and causal impact inference</em>. R package version 0.0.1.</li>
-<li>Bache SM and Wickham H (2014). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 1.5, <a href="https://CRAN.R-project.org/package=magrittr" class="uri">https://CRAN.R-project.org/package=magrittr</a></li>
-<li>Wickham H (2009). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. ISBN 978-0-387-98140-6, <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a></li>
-<li>Vanderkam D, Allaire J, Owen J, Gromer D, Shevtsov P and Thieurmel B (2016). <em>dygraphs: Interface to ‘Dygraphs’ Interactive Time Series Charting Library</em>. R package version 1.1.1-2.</li>
-<li>Allaire J, Cheng J, Xie Y, McPherson J, Chang W, Allen J, Wickham H, Atkins A and Hyndman R (2016). <em>rmarkdown: Dynamic Documents for R</em>. R package version 1.0, <a href="https://CRAN.R-project.org/package=rmarkdown" class="uri">https://CRAN.R-project.org/package=rmarkdown</a></li>
-<li>Xie Y (2016). <em>knitr: A General-Purpose Package for Dynamic Report Generation in R</em>. R package version 1.14, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a></li>
-<li>Xie Y (2015). <em>Dynamic Documents with R and knitr</em>, 2nd edition. Chapman and Hall/CRC, Boca Raton, Florida. ISBN 978-1498716963, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a></li>
-<li>Xie Y (2014). “knitr: A Comprehensive Tool for Reproducible Research in R.” In Stodden V, Leisch F and Peng RD (eds.), <em>Implementing Reproducible Computational Research</em>. Chapman and Hall/CRC. ISBN 978-1466561595, <a href="http://www.crcpress.com/product/isbn/9781466561595" class="uri">http://www.crcpress.com/product/isbn/9781466561595</a></li>
+<ol start="5" style="list-style-type: decimal" <li id="ref-5">
+R Core Team (2016). <em>R: A Language and Environment for Statistical Computing</em>. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a>
+</li>
+<li id="ref-6">
+Dowle M, Srinivasan A, Short T, Saporta SLwcfR and Antonyan E (2015). <em>data.table: Extension of Data.frame</em>. R package version 1.9.6, <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>
+</li>
+<li id="ref-7">
+Scott SL (2016). <em>bsts: Bayesian Structural Time Series</em>. R package version 0.6.5, <a href="https://CRAN.R-project.org/package=bsts" class="uri">https://CRAN.R-project.org/package=bsts</a>
+</li>
+<li id="ref-8">
+Giorgino T (2009). “Computing and Visualizing Dynamic Time Warping Alignments in R: The dtw Package.” <em>Journal of Statistical Software</em>, <em>31</em>(7), pp. 1-24. <a href="http://www.jstatsoft.org/v31/i07/" class="uri">http://www.jstatsoft.org/v31/i07/</a>
+</li>
+<li id="ref-9">
+Tormene P, Giorgino T, Quaglini S and Stefanelli M (2008). “Matching Incomplete Time Series with Dynamic Time Warping: An Algorithm and an Application to Post-Stroke Rehabilitation.” <em>Artificial Intelligence in Medicine</em>, <em>45</em>(1), pp. 11-34. doi: 10.1016/j.artmed.2008.11.007 (URL: <a href="http://doi.org/10.1016/j.artmed.2008.11.007" class="uri">http://doi.org/10.1016/j.artmed.2008.11.007</a>).
+</li>
+<li id="ref-10">
+Kim L (2015). <em>MarketMatching: Market matching and causal impact inference</em>. R package version 0.0.1.
+</li>
+<li id="ref-11">
+Bache SM and Wickham H (2014). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 1.5, <a href="https://CRAN.R-project.org/package=magrittr" class="uri">https://CRAN.R-project.org/package=magrittr</a>
+</li>
+<li id="ref-12">
+Wickham H (2009). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. ISBN 978-0-387-98140-6, <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a>
+</li>
+<li id="ref-13">
+Allaire J, Cheng J, Xie Y, McPherson J, Chang W, Allen J, Wickham H, Atkins A and Hyndman R (2016). <em>rmarkdown: Dynamic Documents for R</em>. R package version 1.0, <a href="https://CRAN.R-project.org/package=rmarkdown" class="uri">https://CRAN.R-project.org/package=rmarkdown</a>
+</li>
+<li id="ref-14">
+Xie Y (2016). <em>knitr: A General-Purpose Package for Dynamic Report Generation in R</em>. R package version 1.14, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
+</li>
+<li id="ref-15">
+Xie Y (2015). <em>Dynamic Documents with R and knitr</em>, 2nd edition. Chapman and Hall/CRC, Boca Raton, Florida. ISBN 978-1498716963, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
+</li>
+<li id="ref-16">
+Xie Y (2014). “knitr: A Comprehensive Tool for Reproducible Research in R.” In Stodden V, Leisch F and Peng RD (eds.), <em>Implementing Reproducible Computational Research</em>. Chapman and Hall/CRC. ISBN 978-1466561595, <a href="http://www.crcpress.com/product/isbn/9781466561595" class="uri">http://www.crcpress.com/product/isbn/9781466561595</a>
+</li>
 </ol>
 </div>
 </div>
@@ -736,9 +664,9 @@ We also fit versions of the models for pageviews that specifically came from IP 
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:MPopov_(WMF)">Mikhail Popov</a> (Analysis &amp; Report)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:DTankersley_(WMF)">Deb Tankersley</a> (Product Management)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:Deskana_(WMF)">Dan Garry</a> (Review)</p>
-<p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:CXie_(WMF)">Chelsy Xie</a> (Review)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:TJones_(WMF)">Trey Jones</a> (Review)</p>
-<p class="date"><span class="glyphicon glyphicon-calendar"></span> 9 September 2016</p>
+<p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:CXie_(WMF)">Chelsy Xie</a> (Review)</p>
+<p class="date"><span class="glyphicon glyphicon-calendar"></span> 13 September 2016</p>
 </div>
 
 
