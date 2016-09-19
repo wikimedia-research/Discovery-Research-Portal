@@ -1,13 +1,12 @@
 ---
 title: "The Wikipedia.org Portal and Ukrainian Wikipedia"
-subtitle: "3rd Draft"
 author:
 - <a href = "https://meta.wikimedia.org/wiki/User:MPopov_(WMF)">Mikhail Popov</a> (Analysis & Report)
 - <a href = "https://meta.wikimedia.org/wiki/User:DTankersley_(WMF)">Deb Tankersley</a> (Product Management)
 - <a href = "https://meta.wikimedia.org/wiki/User:Deskana_(WMF)">Dan Garry</a> (Review)
 - <a href = "https://meta.wikimedia.org/wiki/User:TJones_(WMF)">Trey Jones</a> (Review)
 - <a href = "https://meta.wikimedia.org/wiki/User:CXie_(WMF)">Chelsy Xie</a> (Review)
-date: "13 September 2016"
+date: "19 September 2016"
 output:
   rmdformats::readthedown:
     highlight: kate
@@ -27,8 +26,6 @@ library(data.table)
 library(bsts)
 library(magrittr)
 library(ggplot2)
-library(dygraphs)
-library(extrafont)
 path <- function(x) {
   if (grepl("Analyses/Ukrainian Wikipedia", getwd(), fixed = TRUE)) {
     return(x)
@@ -43,17 +40,17 @@ path <- function(x) {
 <p>In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that's where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to the Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the deployment did not have a statistically significant effect. In other words, we do not have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from the Wikipedia.org Portal.</p>
 </div>
 
-<p style = "text-align: center;">
-  { <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> |
+<p style = "text-align: center; font-size: small;">
+  { RMarkdown Source <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">HTML Version</a> / <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/Analyses/Ukrainian%20Wikipedia/report.Rmd">PDF Version</a> |
   <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> |
   <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> |
   <a href="https://phabricator.wikimedia.org/T143853">Phabricator Task</a> |
-  Download PDF }
+  <a href="https://commons.wikimedia.org/wiki/File:The_Wikipedia.org_Portal_and_Ukrainian_Wikipedia.pdf">Download PDF</a> }
 </p>
 
 ## Background
 
-For the past several months, Discovery's the Wikipedia.org Portal team has been working on redesigning the ([wikipedia.org](https://wikipedia.org)) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the [final major patch](https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0) (for the foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the "Read in your language" button (see Figure [1a](figures/portal_a.png) and [1b](figures/portal_b.png) below).
+For the past several months, Discovery's the Wikipedia.org Portal team has been working on redesigning the ([wikipedia.org](https://wikipedia.org)) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed a [major patch](https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the "Read in your language" button (see Figure [1a](figures/portal_a.png) and [1b](figures/portal_b.png) below).
 
 <div><div style = "float: left; width: 31%; margin-right: 2%"><a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting the Wikipedia.org Portal with Russian as the preferred language."></a><p class = "caption"><strong>Figure 1 (a)</strong>: Default experience when visiting the Wikipedia.org Portal with Russian as the preferred language. Our deployment on August 16th, 2016, collapsed the language links into a hidden-by-default modal in an effort to make the page's design cleaner and less overwhelming to new visitors.</p></div><div style = "float: left; width: 31%; margin-left: 2%"><a href = "figures/portal_b.png"><img src = "figures/portal_b.png" alt = 'Figure 1 (b): Link to Ukrainian Wikipedia is only visible by clicking the "Read in your language" button to reveal the modal containing links to Wikipedia in various languages.'></a><p class = "caption"><strong>Figure 1 (b)</strong>: Link to Ukrainian Wikipedia is only visible by clicking the "Read in your language" button to reveal the modal containing links to Wikipedia in various languages.</p></div><div style = "float: left; width: 31%; margin-left: 2%"><a href = "figures/portal_c.png"><img src = "figures/portal_c.png" alt = "Figure 1 (c): How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe."></a><p class = "caption"><strong>Figure 1 (c)</strong>: How the Wikipedia.org Portal looks to a user who has set their language preferences to Ukrainian (first) and Russian (second). The links to Ukrainian and Russian Wikipedias are now the first links around the globe.</p></div></div><div style = "clear:left;"></div>
 
@@ -107,7 +104,7 @@ Twenty-eight different models (but only twelve dealt with Russian-but-not-Ukrain
 
 ```{r best_markets}
 market_match$BestMatches %>%
-  dplyr::filter(source == "ukrainian wikipedia (main page) from the Wikipedia.org Portal") %>%
+  dplyr::filter(source == "Ukrainian Wikipedia (Main Page) PVs from Portal's Russian-but-not-Ukrainian-speaking visitors") %>%
   dplyr::select(BestControl, RelativeDistance, Correlation) %>%
   dplyr::rename(Control = BestControl,
                 Distance = RelativeDistance) %>%
@@ -197,6 +194,7 @@ c("base", "data.table", "bsts", "dtw", "MarketMatching", "magrittr", "ggplot2", 
   paste(collapse = "") %>%
   gsub("<URL:", "", ., fixed = TRUE) %>%
   gsub(">.", "", ., fixed = TRUE) %>%
-  paste0("<ol start = \"5\" style = \"list-style-type: decimal\"", ., "</ol>", collapse = "") %>%
+  paste0("<ol start = \"5\" style = \"list-style-type: decimal\">", ., "</ol>", collapse = "") %>%
+  gsub("\n", "", .) %>%
   cat
 ```

@@ -1,13 +1,12 @@
 ---
 title: "The Wikipedia.org Portal and Ukrainian Wikipedia"
-subtitle: "3rd Draft"
 author:
 - Mikhail Popov (Analysis and Report)
 - Deb Tankersley (Product Management)
 - Dan Garry (Review)
 - Trey Jones Review)
 - Chelsy Xie (Review)
-date: "13 September 2016"
+date: "19 September 2016"
 output:
   pdf_document:
     fig_caption: true
@@ -20,7 +19,6 @@ fontsize: 11pt
 geometry: margin=1in
 ---
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-library(rmdformats) # https://github.com/juba/rmdformats
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.path = "figures/")
 knitr::opts_knit$set(width = 75)
 options(max.print = "75")
@@ -28,7 +26,6 @@ library(data.table)
 library(bsts)
 library(magrittr)
 library(ggplot2)
-library(dygraphs)
 path <- function(x) {
   if (grepl("Analyses/Ukrainian Wikipedia", getwd(), fixed = TRUE)) {
     return(x)
@@ -48,7 +45,7 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 
 ## Background
 
-For the past several months, Discovery's the Wikipedia.org Portal team has been working on redesigning the ([wikipedia.org](https://wikipedia.org)) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the [final major patch](https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0) (for the foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the "Read in your language" button (see Figures \ref{fig:portal_a} and \ref{fig:portal_b}).
+For the past several months, Discovery's the Wikipedia.org Portal team has been working on redesigning the ([wikipedia.org](https://wikipedia.org)) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed a [major patch](https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the "Read in your language" button (see Figures \ref{fig:portal_a} and \ref{fig:portal_b}).
 
 Per [some comments in a thread on mediawiki.org](https://www.mediawiki.org/wiki/Topic:T7n9rhko21e3xawy), there is a suspicion that the deployment of the collapsed language links has decreased the page views to the Ukrainian Wikipedia as a result of some users' browsers being configured to Russian, thereby burying the link to the [Ukrainian Wikipedia](https://uk.wikipedia.org/) (shown in Figure \ref{fig:portal}). The goal of this analysis is to test the hypothesis that the deployment has had a negative impact on visits to Ukrainian Wikipedia's [main page](https://uk.wikipedia.org/wiki/) from the Wikipedia.org Portal. That is, this analysis is not concerned with Ukrainian Wikipedia overall pageviews or pageviews from somebody searching on the Wikipedia.org Portal and going to a specific article or pageviews from search engines and other sources.
 
@@ -194,7 +191,7 @@ for (model_name in names(model_list)) {
 
 ```{r best_markets, results = 'asis'}
 market_match$BestMatches %>%
-  dplyr::filter(source == "ukrainian wikipedia (main page) from the Wikipedia.org Portal") %>%
+  dplyr::filter(source == "Ukrainian Wikipedia (Main Page) PVs from Portal's Russian-but-not-Ukrainian-speaking visitors") %>%
   dplyr::select(BestControl, RelativeDistance, Correlation) %>%
   dplyr::rename(Control = BestControl,
                 Distance = RelativeDistance) %>%

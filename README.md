@@ -3,6 +3,7 @@
 
 ## Analyses
 
+* __19 Sep 2016__: [Ukrainian Wikipedia Pageviews](Analyses/Ukrainian%20Wikipedia) ([Report](http://wikimedia-research.github.io/Discovery-Research-Portal/ukrainian/), [Task](https://phabricator.wikimedia.org/T143853))
 * __19 Aug 2016__: [Rise of Wikipedia.org Portal Pageviews](Analyses/Pageviews%20Rise) ([Write-up](Analyses/Pageviews%20Rise/README.md), [Task](https://phabricator.wikimedia.org/T143045))
 * __17 Aug 2016__: [Deployments Over Time](Analyses/Deployments%20Over%20Time) ([Report](http://wikimedia-research.github.io/Discovery-Research-Portal/deployments/), [Task](https://phabricator.wikimedia.org/T138397))
 * __21 June 2016__: [Determine if wikipedia.org portal is redirecting to itself](Analyses/Self-Referrals) ([Task](https://phabricator.wikimedia.org/T130769))

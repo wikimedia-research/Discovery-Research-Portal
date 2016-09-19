@@ -14,14 +14,17 @@
 <meta name="author" content="Trey Jones (Review)" />
 <meta name="author" content="Chelsy Xie (Review)" />
 
-<meta name="date" content="2016-09-13" />
+<meta name="date" content="2016-09-19" />
 
 <title>The Wikipedia.org Portal and Ukrainian Wikipedia</title>
 
 <script src="index_files/jquery-1.11.3/jquery.min.js"></script>
+<script src="index_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="index_files/bootstrap-3.3.6/css/bootstrap.min.css" rel="stylesheet" />
 <script src="index_files/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+<link href="index_files/magnific-popup-1.1.0/magnific-popup.css" rel="stylesheet" />
+<script src="index_files/magnific-popup-1.1.0/jquery.magnific-popup.min.js"></script>
 <link href="index_files/readthedown-0.1/readthedown.css" rel="stylesheet" />
 <script src="index_files/readthedown-0.1/readthedown.js"></script>
 
@@ -36,13 +39,23 @@
 
 <div id="content" data-toggle="wy-nav-shift">
 
+<!-- tabsets -->
+<script src="index_files/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
 <nav id="nav-top" role="navigation" aria-label="top navigation">
     <a role="button" href="#" data-toggle="wy-nav-top"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
 </nav>
 
+
 <div id="header">
 <h1 class="title">The Wikipedia.org Portal and Ukrainian Wikipedia</h1>
-<h1 class="subtitle">3rd Draft</h1>
 </div>
 
 
@@ -54,7 +67,7 @@
       <li><a href="#methods">Methods</a></li>
       <li><a href="#results">Results</a></li>
       <li><a href="#references">References</a></li>
-      </ul>  
+      </ul>
     </div>
 </div>
 
@@ -70,12 +83,12 @@ On 16 August 2016, Discovery deployed a major design change to the Wikipedia.org
 In this analysis, we use Bayesian structural time series models to model Ukrainian Wikipedia Main Page (since that’s where the Portal leads to) pageviews from Russian-but-not-Ukrainian-speaking visitors to the Wikipedia.org Portal. The effect of the deployment was estimated to be negative in some models and positive in others — including ones that looked at Russian-and-Ukrainian-speaking visitors — but the 95% credible interval included 0 in all of them, meaning the deployment did not have a statistically significant effect. In other words, we do not have sufficient evidence to say that the language-dropdown deployment had a convincingly positive or negative impact on Ukrainian Wikipedia Main Page pageviews from the Wikipedia.org Portal.
 </p>
 </div>
-<p style="text-align: center;">
-{ <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">RMarkdown Source</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> | <a href="https://phabricator.wikimedia.org/T143853">Phabricator Task</a> | Download PDF }
+<p style="text-align: center; font-size: small;">
+{ RMarkdown Source <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/docs/ukrainian/index.Rmd">HTML Version</a> / <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/blob/master/Analyses/Ukrainian%20Wikipedia/report.Rmd">PDF Version</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/docs/ukrainian/figures">Figures</a> | <a href="https://github.com/wikimedia-research/Discovery-Research-Portal/tree/master/Analyses/Ukrainian%20Wikipedia">Analysis Codebase</a> | <a href="https://phabricator.wikimedia.org/T143853">Phabricator Task</a> | <a href="https://commons.wikimedia.org/wiki/File:The_Wikipedia.org_Portal_and_Ukrainian_Wikipedia.pdf">Download PDF</a> }
 </p>
 <div id="background" class="section level2">
 <h2>Background</h2>
-<p>For the past several months, Discovery’s the Wikipedia.org Portal team has been working on redesigning the (<a href="https://wikipedia.org">wikipedia.org</a>) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed the <a href="https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0">final major patch</a> (for the foreseeable future) wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the “Read in your language” button (see Figure <a href="figures/portal_a.png">1a</a> and <a href="figures/portal_b.png">1b</a> below).</p>
+<p>For the past several months, Discovery’s the Wikipedia.org Portal team has been working on redesigning the (<a href="https://wikipedia.org">wikipedia.org</a>) page to have a cleaner, more welcoming, and less overwhelming design and user experience. On 16 August 2016, the team deployed a <a href="https://phabricator.wikimedia.org/rWPOR84feffc2ec21fe1e060bf3ffb6e232ab3e259bf0">major patch</a> wherein the links to Wikipedia in 200+ languages have been put into a drop-down modal that is hidden by default and is only visible when the user intentionally clicks the “Read in your language” button (see Figure <a href="figures/portal_a.png">1a</a> and <a href="figures/portal_b.png">1b</a> below).</p>
 <div>
 <div style="float: left; width: 31%; margin-right: 2%">
 <a href = "figures/portal_a.png"><img src = "figures/portal_a.png" alt = "Figure 1 (a): Default experience when visiting the Wikipedia.org Portal with Russian as the preferred language."></a>
@@ -130,6 +143,11 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 <div id="results" class="section level2">
 <h2>Results</h2>
 <table>
+<colgroup>
+<col width="75%" />
+<col width="10%" />
+<col width="13%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">Control</th>
@@ -138,6 +156,106 @@ In this analysis, we use Bayesian structural time series models to model Ukraini
 </tr>
 </thead>
 <tbody>
+<tr class="odd">
+<td align="left">ukrainian wikivoyage (other pages) from elsewhere</td>
+<td align="right">0.275</td>
+<td align="right">0.232</td>
+</tr>
+<tr class="even">
+<td align="left">ukrainian wiktionary (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.309</td>
+<td align="right">-0.241</td>
+</tr>
+<tr class="odd">
+<td align="left">english wikisource (main page) from elsewhere</td>
+<td align="right">0.345</td>
+<td align="right">0.044</td>
+</tr>
+<tr class="even">
+<td align="left">ukrainian wikivoyage (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.358</td>
+<td align="right">0.024</td>
+</tr>
+<tr class="odd">
+<td align="left">english wiktionary (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.417</td>
+<td align="right">0.006</td>
+</tr>
+<tr class="even">
+<td align="left">ukrainian wikiquote (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.455</td>
+<td align="right">0.061</td>
+</tr>
+<tr class="odd">
+<td align="left">ukrainian wikisource (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.537</td>
+<td align="right">0.179</td>
+</tr>
+<tr class="even">
+<td align="left">english wikinews (main page) from elsewhere</td>
+<td align="right">0.546</td>
+<td align="right">0.068</td>
+</tr>
+<tr class="odd">
+<td align="left">crimean tatar wikipedia (main page) from a search engine</td>
+<td align="right">0.587</td>
+<td align="right">-0.351</td>
+</tr>
+<tr class="even">
+<td align="left">crimean tatar wikipedia (main page) from elsewhere</td>
+<td align="right">0.606</td>
+<td align="right">-0.103</td>
+</tr>
+<tr class="odd">
+<td align="left">ukrainian wikisource (other pages) from elsewhere</td>
+<td align="right">0.700</td>
+<td align="right">0.204</td>
+</tr>
+<tr class="even">
+<td align="left">german wiktionary (main page) direct (e.g. bookmark or homepage)</td>
+<td align="right">0.709</td>
+<td align="right">0.029</td>
+</tr>
+<tr class="odd">
+<td align="left">english wikivoyage (main page) from elsewhere</td>
+<td align="right">0.713</td>
+<td align="right">0.107</td>
+</tr>
+<tr class="even">
+<td align="left">crimean tatar wikipedia (main page) from Wikipedia.org Portal</td>
+<td align="right">0.767</td>
+<td align="right">-0.017</td>
+</tr>
+<tr class="odd">
+<td align="left">ukrainian wikibooks (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.770</td>
+<td align="right">-0.064</td>
+</tr>
+<tr class="even">
+<td align="left">crimean tatar wikipedia (main page) from a Wikimedia project/tool/bot</td>
+<td align="right">0.811</td>
+<td align="right">0.021</td>
+</tr>
+<tr class="odd">
+<td align="left">russian wiktionary (main page) from elsewhere</td>
+<td align="right">0.876</td>
+<td align="right">-0.001</td>
+</tr>
+<tr class="even">
+<td align="left">ukrainian wikibooks (other pages) from elsewhere</td>
+<td align="right">0.878</td>
+<td align="right">0.024</td>
+</tr>
+<tr class="odd">
+<td align="left">ukrainian wiktionary (other pages) from elsewhere</td>
+<td align="right">1.114</td>
+<td align="right">0.032</td>
+</tr>
+<tr class="even">
+<td align="left">ukrainian wikiquote (other pages) from elsewhere</td>
+<td align="right">1.131</td>
+<td align="right">-0.098</td>
+</tr>
 </tbody>
 </table>
 <p class="caption">
@@ -616,41 +734,42 @@ Larsen, K. (2016, April 21). Sorry ARIMA, but I’m Going Bayesian [Blog post]. 
 </div>
 <div id="software" class="section level3">
 <h3>Software</h3>
-<ol start="5" style="list-style-type: decimal" <li id="ref-5">
-R Core Team (2016). <em>R: A Language and Environment for Statistical Computing</em>. R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a>
+<ol start="5" style="list-style-type: decimal">
+<li id="ref-5">
+R Core Team (2016). <em>R: A Language and Environment for StatisticalComputing</em>. R Foundation for Statistical Computing, Vienna,Austria. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a>
 </li>
 <li id="ref-6">
-Dowle M, Srinivasan A, Short T, Saporta SLwcfR and Antonyan E (2015). <em>data.table: Extension of Data.frame</em>. R package version 1.9.6, <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>
+Dowle M, Srinivasan A, Short T, Saporta SLwcfR and Antonyan E(2015). <em>data.table: Extension of Data.frame</em>. R package version1.9.6, <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>
 </li>
 <li id="ref-7">
-Scott SL (2016). <em>bsts: Bayesian Structural Time Series</em>. R package version 0.6.5, <a href="https://CRAN.R-project.org/package=bsts" class="uri">https://CRAN.R-project.org/package=bsts</a>
+Scott SL (2016). <em>bsts: Bayesian Structural Time Series</em>. Rpackage version 0.6.5, <a href="https://CRAN.R-project.org/package=bsts" class="uri">https://CRAN.R-project.org/package=bsts</a>
 </li>
 <li id="ref-8">
-Giorgino T (2009). “Computing and Visualizing Dynamic Time Warping Alignments in R: The dtw Package.” <em>Journal of Statistical Software</em>, <em>31</em>(7), pp. 1-24. <a href="http://www.jstatsoft.org/v31/i07/" class="uri">http://www.jstatsoft.org/v31/i07/</a>
+Giorgino T (2009). “Computing and Visualizing Dynamic Time WarpingAlignments in R: The dtw Package.” <em>Journal of StatisticalSoftware</em>, <em>31</em>(7), pp. 1-24. <a href="http://www.jstatsoft.org/v31/i07/" class="uri">http://www.jstatsoft.org/v31/i07/</a>
 </li>
 <li id="ref-9">
-Tormene P, Giorgino T, Quaglini S and Stefanelli M (2008). “Matching Incomplete Time Series with Dynamic Time Warping: An Algorithm and an Application to Post-Stroke Rehabilitation.” <em>Artificial Intelligence in Medicine</em>, <em>45</em>(1), pp. 11-34. doi: 10.1016/j.artmed.2008.11.007 (URL: <a href="http://doi.org/10.1016/j.artmed.2008.11.007" class="uri">http://doi.org/10.1016/j.artmed.2008.11.007</a>).
+Tormene P, Giorgino T, Quaglini S and Stefanelli M (2008).“Matching Incomplete Time Series with Dynamic Time Warping: AnAlgorithm and an Application to Post-Stroke Rehabilitation.”<em>Artificial Intelligence in Medicine</em>, <em>45</em>(1), pp. 11-34. <a href="doi:10.1016/j.artmed.2008.11.007" class="uri">doi:10.1016/j.artmed.2008.11.007</a> (URL:<a href="http://doi.org/10.1016/j.artmed.2008.11.007" class="uri">http://doi.org/10.1016/j.artmed.2008.11.007</a>).
 </li>
 <li id="ref-10">
-Kim L (2015). <em>MarketMatching: Market matching and causal impact inference</em>. R package version 0.0.1.
+Kim L (2015). <em>MarketMatching: Market matching and causal impactinference</em>. R package version 0.0.1.
 </li>
 <li id="ref-11">
-Bache SM and Wickham H (2014). <em>magrittr: A Forward-Pipe Operator for R</em>. R package version 1.5, <a href="https://CRAN.R-project.org/package=magrittr" class="uri">https://CRAN.R-project.org/package=magrittr</a>
+Bache SM and Wickham H (2014). <em>magrittr: A Forward-Pipe Operatorfor R</em>. R package version 1.5, <a href="https://CRAN.R-project.org/package=magrittr" class="uri">https://CRAN.R-project.org/package=magrittr</a>
 </li>
 <li id="ref-12">
-Wickham H (2009). <em>ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. ISBN 978-0-387-98140-6, <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a>
+Wickham H (2009). <em>ggplot2: Elegant Graphics for Data Analysis</em>.Springer-Verlag New York. ISBN 978-0-387-98140-6, <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a>
 </li>
 <li id="ref-13">
-Allaire J, Cheng J, Xie Y, McPherson J, Chang W, Allen J, Wickham H, Atkins A and Hyndman R (2016). <em>rmarkdown: Dynamic Documents for R</em>. R package version 1.0, <a href="https://CRAN.R-project.org/package=rmarkdown" class="uri">https://CRAN.R-project.org/package=rmarkdown</a>
+Allaire J, Cheng J, Xie Y, McPherson J, Chang W, Allen J, WickhamH, Atkins A and Hyndman R (2016). <em>rmarkdown: Dynamic Documentsfor R</em>. R package version 1.0, <a href="https://CRAN.R-project.org/package=rmarkdown" class="uri">https://CRAN.R-project.org/package=rmarkdown</a>
 </li>
 <li id="ref-14">
-Xie Y (2016). <em>knitr: A General-Purpose Package for Dynamic Report Generation in R</em>. R package version 1.14, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
+Xie Y (2016). <em>knitr: A General-Purpose Package for Dynamic ReportGeneration in R</em>. R package version 1.14, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
 </li>
 <li id="ref-15">
-Xie Y (2015). <em>Dynamic Documents with R and knitr</em>, 2nd edition. Chapman and Hall/CRC, Boca Raton, Florida. ISBN 978-1498716963, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
+Xie Y (2015). <em>Dynamic Documents with R and knitr</em>, 2nd edition.Chapman and Hall/CRC, Boca Raton, Florida. ISBN 978-1498716963, <a href="http://yihui.name/knitr/" class="uri">http://yihui.name/knitr/</a>
 </li>
 <li id="ref-16">
-Xie Y (2014). “knitr: A Comprehensive Tool for Reproducible Research in R.” In Stodden V, Leisch F and Peng RD (eds.), <em>Implementing Reproducible Computational Research</em>. Chapman and Hall/CRC. ISBN 978-1466561595, <a href="http://www.crcpress.com/product/isbn/9781466561595" class="uri">http://www.crcpress.com/product/isbn/9781466561595</a>
+Xie Y (2014). “knitr: A Comprehensive Tool for ReproducibleResearch in R.” In Stodden V, Leisch F and Peng RD (eds.),<em>Implementing Reproducible Computational Research</em>. Chapman andHall/CRC. ISBN 978-1466561595, <a href="http://www.crcpress.com/product/isbn/9781466561595" class="uri">http://www.crcpress.com/product/isbn/9781466561595</a>
 </li>
 </ol>
 </div>
@@ -666,10 +785,14 @@ Xie Y (2014). “knitr: A Comprehensive Tool for Reproducible Research in R.” 
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:Deskana_(WMF)">Dan Garry</a> (Review)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:TJones_(WMF)">Trey Jones</a> (Review)</p>
 <p class="author"><span class="glyphicon glyphicon-user"></span> <a href = "https://meta.wikimedia.org/wiki/User:CXie_(WMF)">Chelsy Xie</a> (Review)</p>
-<p class="date"><span class="glyphicon glyphicon-calendar"></span> 13 September 2016</p>
+<p class="date"><span class="glyphicon glyphicon-calendar"></span> 19 September 2016</p>
 </div>
 
 
+<script>
+$(document).ready(function () {
+ 	  });
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
