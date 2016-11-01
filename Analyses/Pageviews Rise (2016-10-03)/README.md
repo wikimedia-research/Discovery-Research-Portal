@@ -32,5 +32,5 @@ Correlation Matrix:
 | enwiki_main | 0.7397311  | 1           | -0.5555959 |
 | portal      | -0.3653886 | -0.5555959  | 1          |
 
-## Concern
-As mentioned above, Android pageviews accounts for 70-80% of the total pageviews, which is very suspicious. We also notice that regarding access method, we don't have any portal pageviews whose access method is mobile web, and there are only 141 pageviews whose access method is mobile app during the 60 days period. It is possible that our query for counting pageviews to portal is problematic, and we need suggestions from others to see what might have been wrong.
+## Status
+As mentioned above, Android pageviews accounts for 70-80% of the total pageviews, which is very suspicious. My coworker Mikhail did an investigation into this problem and found that many of these pageviews came from the same place, see [T146214](https://phabricator.wikimedia.org/T146214) for more details. Currently we cannot do anything else without further information. 

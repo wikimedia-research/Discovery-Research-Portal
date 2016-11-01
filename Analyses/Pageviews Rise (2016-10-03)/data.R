@@ -155,6 +155,27 @@ readr::write_rds(data.table::as.data.table(pageviews),
 q(save = "no")
 
 
+# Group by os, browser, check android
+query <- "SELECT
+user_agent_map['os_family'] AS os,
+user_agent_map['os_major'] AS os_major,
+user_agent_map['os_minor'] AS os_minor,
+user_agent_map['browser_family'] AS browser,
+user_agent_map['browser_major'] AS browser_major,
+COUNT(1) AS web_requests
+FROM webrequest
+WHERE year=2016 AND month=10 AND day=4
+AND uri_host RLIKE('^(www\\.)?wikipedia.org/*$')
+AND INSTR(uri_path, 'search-redirect.php') = 0
+AND content_type RLIKE('^text/html')
+AND webrequest_source = 'text'
+AND NOT (referer RLIKE('^http://localhost'))
+AND agent_type = 'user'
+AND referer_class != 'unknown'
+AND http_status IN('200', '304')
+GROUP BY user_agent_map['os_family'],user_agent_map['os_major'],user_agent_map['os_minor'],user_agent_map['browser_family'],user_agent_map['browser_major'];
+"
+
 ## Locally:
 dir.create("data")
 system2("scp", c("stat2:/home/chelsyx/portal_webrequest_counts_20160804-20161004.rds", "data/"))
