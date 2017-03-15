@@ -11,7 +11,7 @@
 
 <meta name="author" content="Chelsy Xie (Analysis &amp; Report)" />
 
-<meta name="date" content="2017-03-02" />
+<meta name="date" content="2017-03-15" />
 
 <title>Swap2and3 Search Test Analysis</title>
 
@@ -273,17 +273,14 @@ div.tocify {
 
 <h1 class="title toc-ignore">Swap2and3 Search Test Analysis</h1>
 <h4 class="author"><em><a href = 'https://meta.wikimedia.org/wiki/User:CXie_(WMF)'>Chelsy Xie</a> (Analysis &amp; Report)</em></h4>
-<h4 class="date"><em>02 March 2017</em></h4>
+<h4 class="date"><em>15 March 2017</em></h4>
 
 </div>
 
 
 <div id="executive-summary" class="section level2">
 <h2>Executive Summary</h2>
-</div>
-<div id="background" class="section level2">
-<h2>Background</h2>
-<p>Search ran a test swapping the second and third results to see how much our users care about the position of the result, vs the actual content of the result.</p>
+<p>Wikimedia Engineering’s Discovery’s Search team ran an A/B test from April 7 to April 25, 2016 to see how much our users care about the position of the result vs the actual content of the result by swapping the second and third search results. We found that position 2 has a higher clickthrough rate than position 3 in both group, but the clickthrough rate of third results in test group is higher than that in control group. We also found that test group users are less likely to click on the second result first than the control group, while they are more likely to click on the third result first. Additionally, test group users seems to be more satisfied with the result after they click since they are more likely to stay longer and scroll on the visited page. Therefore, we guess that users tend to look at only the first two results, when they find the first two are not relevant, some of them start to look at the third result and care more about the actual content.</p>
 </div>
 <div id="data" class="section level2">
 <h2>Data</h2>
@@ -303,7 +300,7 @@ data1 &lt;-<span class="st"> </span>data1 %&gt;%
 ## 6474 out of 301603 search sessions fall into both control and test group... Delete those sessions
 temp &lt;-<span class="st"> </span>data1 %&gt;%<span class="st"> </span><span class="kw">group_by</span>(event_searchSessionId) %&gt;%<span class="st"> </span><span class="kw">summarise</span>(<span class="dt">count=</span><span class="kw">length</span>(<span class="kw">unique</span>(event_subTest)))
 data1 &lt;-<span class="st"> </span>data1[data1$event_searchSessionId %in%<span class="st"> </span>temp$event_searchSessionId[temp$count==<span class="dv">1</span>], ]; <span class="kw">rm</span>(temp)</code></pre></div>
-<p>We ran this test from April 7 - April 25, 2016. Only full text search are affected by this test. Around half of the traffic were put into the test group randomly, where we swapped their second and third search results. The rest of the traffic were see as control group. We collected a total of 1.2M events from 295.1K unique sessions.</p>
+<p>We ran this test from April 7 - April 25, 2016. Only full text search are affected by this test. Around half of the traffic were put into the test group randomly, where we swapped their second and third search results. The rest of the traffic were seen as control group. We collected a total of 1.2M events from 295.1K unique sessions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_summary &lt;-<span class="st"> </span>data1 %&gt;%
 <span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">Test group</span><span class="st">`</span> =<span class="st"> </span>event_subTest) %&gt;%
 <span class="st">  </span><span class="kw">summarize</span>(<span class="st">`</span><span class="dt">Search sessions</span><span class="st">`</span> =<span class="st"> </span><span class="kw">length</span>(<span class="kw">unique</span>(event_searchSessionId)), <span class="st">`</span><span class="dt">Events recorded</span><span class="st">`</span> =<span class="st"> </span><span class="kw">n</span>()) %&gt;%<span class="st"> </span>ungroup %&gt;%
@@ -378,7 +375,7 @@ searches &lt;-<span class="st"> </span>data1 %&gt;%
             <span class="st">`</span><span class="dt">Clicked on position 3</span><span class="st">`</span> =<span class="st"> </span><span class="dv">3</span> %in%<span class="st"> </span>event_position
             ) %&gt;%
 <span class="st">  </span><span class="kw">arrange</span>(timestamp)</code></pre></div>
-<p>After de-duplicating, we collapsed 1M events into 483.9K searches.</p>
+<p>After de-duplication, we collapsed 1M events into 483.9K searches.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Summary Table</span>
 events_summary2 &lt;-<span class="st"> </span>data1 %&gt;%
 <span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">Test group</span><span class="st">`</span> =<span class="st"> </span>event_subTest) %&gt;%
@@ -438,17 +435,19 @@ knitr::<span class="kw">kable</span>(<span class="kw">inner_join</span>(searches
 </table>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Summarize on a page-by-page basis for each visitPage:</span>
 clickedResults &lt;-<span class="st"> </span>data1 %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span> =<span class="st"> </span>event_subTest, event_mwSessionId, event_searchSessionId, page_id) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(<span class="dt">test_group =</span> event_subTest, event_mwSessionId, event_searchSessionId, page_id) %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(<span class="st">&quot;visitPage&quot;</span> %in%<span class="st"> </span>event_action) %&gt;%<span class="st"> </span><span class="co">#only checkin and visitPage action</span>
 <span class="st">  </span><span class="kw">summarize</span>(<span class="dt">timestamp =</span> timestamp[<span class="dv">1</span>], 
             <span class="dt">position =</span> <span class="kw">na.omit</span>(event_position)[<span class="dv">1</span>][<span class="dv">1</span>],
             <span class="dt">dwell_time=</span><span class="kw">ifelse</span>(<span class="st">&quot;checkin&quot;</span> %in%<span class="st"> </span>event_action, <span class="kw">max</span>(event_checkin, <span class="dt">na.rm=</span>T), <span class="dv">0</span>),
             <span class="dt">scroll=</span><span class="kw">sum</span>(event_scroll)&gt;<span class="dv">0</span>) %&gt;%
 <span class="st">  </span><span class="kw">arrange</span>(timestamp)
-clickedResults$dwell_time[<span class="kw">is.na</span>(clickedResults$dwell_time)] &lt;-<span class="st"> </span><span class="dv">0</span></code></pre></div>
+clickedResults$dwell_time[<span class="kw">is.na</span>(clickedResults$dwell_time)] &lt;-<span class="st"> </span><span class="dv">0</span>
+<span class="co"># 74148 clickedResults</span>
+clickedResults$status &lt;-<span class="st"> </span><span class="kw">ifelse</span>(clickedResults$dwell_time==<span class="st">&quot;420&quot;</span>, <span class="dv">1</span>, <span class="dv">2</span>)</code></pre></div>
 <p>Last but not least, it is worth noting that there are some issues in our data collecting process:</p>
 <ul>
-<li>Sometimes click events were not recorded while visitPage events were. This problem were solved in June 2016 by <a href="https://phabricator.wikimedia.org/T137262">T137262</a>. For this analysis, we treat click events and visitPage events as the same when computing clickthrough rate.</li>
+<li>Sometimes click events were not recorded while visitPage events were. This problem were solved in June 2016 by <a href="https://phabricator.wikimedia.org/T137262">T137262</a>. For this analysis, we treat both click event and visitPage event as a “click” when computing clickthrough rate, i.e. if there is either a click or a visitPage event in a session, we will say there is a clickthrough in this session.</li>
 <li>There were 6474 out of 301603 search sessions falling into both control and test buckets. We deleted those sessions in data cleansing step.</li>
 </ul>
 </div>
@@ -456,7 +455,7 @@ clickedResults$dwell_time[<span class="kw">is.na</span>(clickedResults$dwell_tim
 <h2>Results</h2>
 <div id="engagement" class="section level3">
 <h3>Engagement</h3>
-<p>Firstly, we compare the overall clickthrough rate between control and test group. The plot below shows that for each session, the control group has a significantly higher engagement; for each SERP, the test group has higher engagement, but the difference is not significant.</p>
+<p>Firstly, we compare the overall clickthrough rate between control and test group. We’ve checked that there is no significant difference in zero result rate between these two groups. The plot below shows that for each session, the control group has a significantly higher engagement; for each SERP, the test group has higher engagement, but the difference is not significant.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare overall CTR</span>
 <span class="co"># per session:</span>
 engagement_overall_session &lt;-<span class="st"> </span>data1 %&gt;%<span class="st"> </span>
@@ -499,7 +498,7 @@ p_ctr_serp &lt;-<span class="st"> </span>engagement_overall_serp %&gt;%
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)
 <span class="kw">plot_grid</span>(p_ctr_ses, p_ctr_serp)</code></pre></div>
 <p><img src="index_files/figure-html/engagement_overall-1.png" /><!-- --></p>
-<p>Next, we compare the clickthrough rates on second and third position by test groups. All the differences in the graph below are significant. In both control and test group, the clickthrough rates on position 2 are higher than position 3, which implies that people care more about position than the actual content. The engagement of 3rd results in test group is higher than that in control group, but it doesn’t rise to compensate.</p>
+<p>Next, we compare the clickthrough rates on second and third position by test groups. All the differences in the graph below are significant. In both control and test group, the clickthrough rates on position 2 are higher than position 3. When comparing the same position between groups, the engagement of 3rd results in test group is higher than that in control group, but it is not as high as its counterpart, the 2nd results in control group.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare position 2 and 3</span>
 <span class="co"># per session, among all nonzero result session:</span>
 engagement_2and3_session &lt;-<span class="st"> </span>data1 %&gt;%<span class="st"> </span>
@@ -589,64 +588,32 @@ first_clicked %&gt;%
 </div>
 <div id="dwell-time-per-visited-page" class="section level3">
 <h3>Dwell Time per Visited Page</h3>
-<p>First we compare the overall survival curves between the two groups. Surprisingly, the test group users are more likely to stay longer on visited pages.</p>
+<p>First we compare the overall survival curves between the two groups. Surprisingly, the test group users are significantly more likely to stay longer on visited pages.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare overall dwell time </span>
-clickedResults %&gt;%
-<span class="st">  </span><span class="kw">split</span>(.$<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">map_df</span>(function(df) {
-    seconds &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>, <span class="dv">60</span>, <span class="dv">90</span>, <span class="dv">120</span>, <span class="dv">150</span>, <span class="dv">180</span>, <span class="dv">210</span>, <span class="dv">240</span>, <span class="dv">300</span>, <span class="dv">360</span>, <span class="dv">420</span>)
-    seshs &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">do.call</span>(cbind, <span class="kw">lapply</span>(seconds, function(second) {
-      <span class="kw">return</span>(<span class="kw">sum</span>(df$dwell_time &gt;=<span class="st"> </span>second))
-    })))
-    <span class="kw">names</span>(seshs) &lt;-<span class="st"> </span>seconds
-    <span class="kw">return</span>(<span class="kw">cbind</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span> =<span class="st"> </span><span class="kw">head</span>(df$<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, <span class="dv">1</span>), <span class="dt">n =</span> seshs$<span class="st">`</span><span class="dt">0</span><span class="st">`</span>, seshs, <span class="st">`</span><span class="dt">450</span><span class="st">`</span>=seshs$<span class="st">`</span><span class="dt">420</span><span class="st">`</span>))
-  }) %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(seconds, visits, -<span class="kw">c</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, n)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">seconds =</span> <span class="kw">as.numeric</span>(seconds)) %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, seconds) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">proportion =</span> visits/n) %&gt;%
-<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">group=</span><span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, <span class="dt">color=</span><span class="st">`</span><span class="dt">test group</span><span class="st">`</span>)) +
-<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">x =</span> seconds, <span class="dt">y =</span> proportion), <span class="dt">direction =</span> <span class="st">&quot;hv&quot;</span>) +
-<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">name =</span> <span class="st">&quot;T (Dwell Time in seconds)&quot;</span>, <span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>, <span class="dv">60</span>, <span class="dv">90</span>, <span class="dv">120</span>, <span class="dv">150</span>, <span class="dv">180</span>, <span class="dv">210</span>, <span class="dv">240</span>, <span class="dv">300</span>, <span class="dv">360</span>, <span class="dv">420</span>))+<span class="st"> </span>
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="st">&quot;Proportion of visits longer than T (P%)&quot;</span>, <span class="dt">labels =</span> scales::<span class="kw">percent_format</span>(),
-                     <span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>)) +
-<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Set1&quot;</span>) +
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+temp &lt;-<span class="st"> </span>clickedResults
+temp$SurvObj &lt;-<span class="st"> </span><span class="kw">with</span>(temp, survival::<span class="kw">Surv</span>(dwell_time, status ==<span class="st"> </span><span class="dv">2</span>))
+fit_all &lt;-<span class="st"> </span>survival::<span class="kw">survfit</span>(SurvObj ~<span class="st"> </span>test_group, <span class="dt">data =</span> temp)
+survminer::<span class="kw">ggsurvplot</span>(fit_all, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">xlab=</span><span class="st">&quot;T (Dwell Time in seconds)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Proportion of visits longer than T (P%)&quot;</span>, 
+                      <span class="dt">surv.scale =</span> <span class="st">&quot;percent&quot;</span>, <span class="dt">palette=</span><span class="st">&quot;Set1&quot;</span>, <span class="dt">legend=</span><span class="st">&quot;bottom&quot;</span>, <span class="dt">legend.title =</span> <span class="st">&quot;Test Group&quot;</span>, <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Control&quot;</span>,<span class="st">&quot;swap2and3&quot;</span>))</code></pre></div>
 <p><img src="index_files/figure-html/dwelltime_overall-1.png" /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(temp)</code></pre></div>
 <p>Next we compare the survival curves for users who clicked on second or third result. We can see that users in test group who clicked on 3rd result have longer dwell time than others. Users in test group who clicked on 2nd result are more likely to leave the visited page at the beginning, and those who stay tends to stay longer.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clickedResults %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(position %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span> =<span class="st"> </span><span class="kw">paste</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, <span class="kw">paste0</span>(<span class="st">&quot;position&quot;</span>,position), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)) %&gt;%
-<span class="st">  </span><span class="kw">split</span>(.$<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">map_df</span>(function(df) {
-    seconds &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>, <span class="dv">60</span>, <span class="dv">90</span>, <span class="dv">120</span>, <span class="dv">150</span>, <span class="dv">180</span>, <span class="dv">210</span>, <span class="dv">240</span>, <span class="dv">300</span>, <span class="dv">360</span>, <span class="dv">420</span>)
-    seshs &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">do.call</span>(cbind, <span class="kw">lapply</span>(seconds, function(second) {
-      <span class="kw">return</span>(<span class="kw">sum</span>(df$dwell_time &gt;=<span class="st"> </span>second))
-    })))
-    <span class="kw">names</span>(seshs) &lt;-<span class="st"> </span>seconds
-    <span class="kw">return</span>(<span class="kw">cbind</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span> =<span class="st"> </span><span class="kw">head</span>(df$<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>, <span class="dv">1</span>), <span class="dt">n =</span> seshs$<span class="st">`</span><span class="dt">0</span><span class="st">`</span>, seshs, <span class="st">`</span><span class="dt">450</span><span class="st">`</span>=seshs$<span class="st">`</span><span class="dt">420</span><span class="st">`</span>))
-  }) %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(seconds, visits, -<span class="kw">c</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>, n)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">seconds =</span> <span class="kw">as.numeric</span>(seconds)) %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>, seconds) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">proportion =</span> visits/n) %&gt;%
-<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">group=</span><span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>, <span class="dt">color=</span><span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>)) +
-<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">x =</span> seconds, <span class="dt">y =</span> proportion), <span class="dt">direction =</span> <span class="st">&quot;hv&quot;</span>) +
-<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">name =</span> <span class="st">&quot;T (Dwell Time in seconds)&quot;</span>, <span class="dt">breaks=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>, <span class="dv">60</span>, <span class="dv">90</span>, <span class="dv">120</span>, <span class="dv">150</span>, <span class="dv">180</span>, <span class="dv">210</span>, <span class="dv">240</span>, <span class="dv">300</span>, <span class="dv">360</span>, <span class="dv">420</span>))+<span class="st"> </span>
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="st">&quot;Proportion of visits longer than T (P%)&quot;</span>, <span class="dt">labels =</span> scales::<span class="kw">percent_format</span>(),
-                     <span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>)) +
-<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Set1&quot;</span>) +
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">temp &lt;-<span class="st"> </span>clickedResults %&gt;%<span class="st"> </span><span class="kw">filter</span>(position %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Test_Group =</span> <span class="kw">paste</span>(test_group, <span class="kw">paste0</span>(<span class="st">&quot;position&quot;</span>,position), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>))
+temp$SurvObj &lt;-<span class="st"> </span><span class="kw">with</span>(temp, survival::<span class="kw">Surv</span>(dwell_time, status ==<span class="st"> </span><span class="dv">2</span>))
+fit_2and3 &lt;-<span class="st"> </span>survival::<span class="kw">survfit</span>(SurvObj ~<span class="st"> </span>Test_Group, <span class="dt">data =</span> temp)
+survminer::<span class="kw">ggsurvplot</span>(fit_2and3, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">xlab=</span><span class="st">&quot;T (Dwell Time in seconds)&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;Proportion of visits longer than T (P%)&quot;</span>, 
+                      <span class="dt">surv.scale =</span> <span class="st">&quot;percent&quot;</span>, <span class="dt">palette=</span><span class="st">&quot;Set1&quot;</span>, <span class="dt">legend=</span><span class="st">&quot;bottom&quot;</span>, <span class="dt">legend.title =</span> <span class="st">&quot;Test Group&quot;</span>,
+                      <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Control_position2&quot;</span>,<span class="st">&quot;Control_position3&quot;</span>,<span class="st">&quot;swap2and3_position2&quot;</span>,<span class="st">&quot;swap2and3_position3&quot;</span>))</code></pre></div>
 <p><img src="index_files/figure-html/dwelltime_2and3-1.png" /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(temp)</code></pre></div>
 </div>
 <div id="scroll" class="section level3">
 <h3>Scroll</h3>
 <p>Users in the test group are more likely to scroll on the visited page.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare overall scroll proportion</span>
 scroll_overall &lt;-<span class="st"> </span>clickedResults %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(test_group) %&gt;%
 <span class="st">  </span><span class="kw">summarize</span>(<span class="dt">scrolls=</span><span class="kw">sum</span>(scroll), <span class="dt">visits=</span><span class="kw">n</span>(), <span class="dt">proportion =</span> <span class="kw">sum</span>(scroll)/<span class="kw">n</span>()) %&gt;%
 <span class="st">  </span>ungroup
 scroll_overall &lt;-<span class="st"> </span><span class="kw">cbind</span>(
@@ -658,7 +625,7 @@ scroll_overall &lt;-<span class="st"> </span><span class="kw">cbind</span>(
   )
 )
 scroll_overall %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">y =</span> mean, <span class="dt">color =</span> <span class="st">`</span><span class="dt">test group</span><span class="st">`</span>)) +
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">y =</span> mean, <span class="dt">color =</span> test_group)) +
 <span class="st">  </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> lower, <span class="dt">ymax =</span> upper), <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="dt">width =</span> <span class="dv">1</span>)) +
 <span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="st">&quot;Test Group&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Set1&quot;</span>, <span class="dt">guide =</span> <span class="kw">guide_legend</span>(<span class="dt">ncol =</span> <span class="dv">2</span>)) +
 <span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels =</span> scales::<span class="kw">percent_format</span>(), <span class="dt">expand =</span> <span class="kw">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>)) +
@@ -672,7 +639,7 @@ scroll_overall %&gt;%
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare position 2 and 3</span>
 scroll_2and3 &lt;-<span class="st"> </span>clickedResults %&gt;%
 <span class="st">  </span><span class="kw">filter</span>(position %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span> =<span class="st"> </span><span class="kw">paste</span>(<span class="st">`</span><span class="dt">test group</span><span class="st">`</span>, <span class="kw">paste0</span>(<span class="st">&quot;position&quot;</span>,position), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span> =<span class="st"> </span><span class="kw">paste</span>(test_group, <span class="kw">paste0</span>(<span class="st">&quot;position&quot;</span>,position), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)) %&gt;%
 <span class="st">  </span><span class="kw">group_by</span>(<span class="st">`</span><span class="dt">Test Group</span><span class="st">`</span>) %&gt;%
 <span class="st">  </span><span class="kw">summarize</span>(<span class="dt">scrolls=</span><span class="kw">sum</span>(scroll), <span class="dt">visits=</span><span class="kw">n</span>(), <span class="dt">proportion =</span> <span class="kw">sum</span>(scroll)/<span class="kw">n</span>()) %&gt;%
 <span class="st">  </span>ungroup
@@ -697,8 +664,10 @@ scroll_2and3 %&gt;%
 <p><img src="index_files/figure-html/scroll_2and3-1.png" /><!-- --></p>
 </div>
 </div>
-<div id="conclusion-and-discussion" class="section level2">
-<h2>Conclusion and Discussion</h2>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+<p>Since we only swap the second and third result in this test and the results above are somewhat confusing, it is hard to conclude that users care more about position than actual content of the result. Instead, we guess that users tend to look at only the first two results, when they find the first two are not relevant, some of them start to look at the third result and care more about the actual content. This explains why the overall engagement is lower in test group (since the second results in test group are less relevant), and why the clickthrough rates on position 2 are always higher than position 3, but engagement of 3rd results in test group is higher than that in control group. It also explains why test group users are more likely to click on the third result first, why test group users who click on the 3rd result have a longer dwell time, and why test group has a longer dwell time overall and more likely to scroll on the visited page (because test group users who are confused by the swapping process but still open the result care more about the actual content). However, without further experiment, we cannot prove our guess.</p>
+<p>Additionally, instead of making explicit control buckets, we simply treat those users who didn’t get assigned to test group as control group users. We suspect that this behavior results in putting all users who don’t have the new javascript into control group automatically, so some metrics may be biased.</p>
 </div>
 
 

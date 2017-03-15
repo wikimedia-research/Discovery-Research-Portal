@@ -106,7 +106,7 @@ knitr::kable(inner_join(searches_summary, events_summary2, by=c("Test group", "S
 
 # Summarize on a page-by-page basis for each visitPage:
 clickedResults <- data1 %>%
-  group_by(`test group` = event_subTest, event_mwSessionId, event_searchSessionId, page_id) %>%
+  group_by(test_group = event_subTest, event_mwSessionId, event_searchSessionId, page_id) %>%
   filter("visitPage" %in% event_action) %>% #only checkin and visitPage action
   summarize(timestamp = timestamp[1], 
             position = na.omit(event_position)[1][1],
@@ -115,9 +115,10 @@ clickedResults <- data1 %>%
   arrange(timestamp)
 clickedResults$dwell_time[is.na(clickedResults$dwell_time)] <- 0
 # 74148 clickedResults
+clickedResults$status <- ifelse(clickedResults$dwell_time=="420", 1, 2)
 
 clickedResults_summary <- clickedResults %>%
-  group_by(`Test group` = `test group`) %>%
+  group_by(`Test group` = test_group) %>%
   summarize(`Visited pages` = length(unique(page_id))) %>% ungroup %>%
   {
     rbind(., tibble(

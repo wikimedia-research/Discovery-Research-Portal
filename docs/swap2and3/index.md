@@ -6,9 +6,7 @@
 
 ## Executive Summary
 
-
-## Background
-Search ran a test swapping the second and third results to see how much our users care about the position of the result, vs the actual content of the result. 
+Wikimedia Engineering’s Discovery’s Search team ran an A/B test from April 7 to April 25, 2016 to see how much our users care about the position of the result vs the actual content of the result by swapping the second and third search results. We found that position 2 has a higher clickthrough rate than position 3 in both group, but the clickthrough rate of third results in test group is higher than that in control group. We also found that test group users are less likely to click on the second result first than the control group, while they are more likely to click on the third result first. Additionally, test group users seems to be more satisfied with the result after they click since they are more likely to stay longer and scroll on the visited page. Therefore, we guess that users tend to look at only the first two results, when they find the first two are not relevant, some of them start to look at the third result and care more about the actual content.
 
 ## Data
 
@@ -31,7 +29,7 @@ temp <- data1 %>% group_by(event_searchSessionId) %>% summarise(count=length(uni
 data1 <- data1[data1$event_searchSessionId %in% temp$event_searchSessionId[temp$count==1], ]; rm(temp)
 ```
 
-We ran this test from April 7 - April 25, 2016. Only full text search are affected by this test. Around half of the traffic were put into the test group randomly, where we swapped their second and third search results. The rest of the traffic were see as control group. We collected a total of 1.2M events from 295.1K unique sessions.
+We ran this test from April 7 - April 25, 2016. Only full text search are affected by this test. Around half of the traffic were put into the test group randomly, where we swapped their second and third search results. The rest of the traffic were seen as control group. We collected a total of 1.2M events from 295.1K unique sessions.
 
 ```r
 data_summary <- data1 %>%
@@ -96,7 +94,7 @@ searches <- data1 %>%
             ) %>%
   arrange(timestamp)
 ```
-After de-duplicating, we collapsed 1M events into 483.9K searches.
+After de-duplication, we collapsed 1M events into 483.9K searches.
 
 ```r
 # Summary Table
@@ -140,7 +138,7 @@ knitr::kable(inner_join(searches_summary, events_summary2, by=c("Test group", "S
 ```r
 # Summarize on a page-by-page basis for each visitPage:
 clickedResults <- data1 %>%
-  group_by(`test group` = event_subTest, event_mwSessionId, event_searchSessionId, page_id) %>%
+  group_by(test_group = event_subTest, event_mwSessionId, event_searchSessionId, page_id) %>%
   filter("visitPage" %in% event_action) %>% #only checkin and visitPage action
   summarize(timestamp = timestamp[1], 
             position = na.omit(event_position)[1][1],
@@ -148,17 +146,19 @@ clickedResults <- data1 %>%
             scroll=sum(event_scroll)>0) %>%
   arrange(timestamp)
 clickedResults$dwell_time[is.na(clickedResults$dwell_time)] <- 0
+# 74148 clickedResults
+clickedResults$status <- ifelse(clickedResults$dwell_time=="420", 1, 2)
 ```
 
 Last but not least, it is worth noting that there are some issues in our data collecting process:
 
-* Sometimes click events were not recorded while visitPage events were. This problem were solved in June 2016 by [T137262](https://phabricator.wikimedia.org/T137262). For this analysis, we treat click events and visitPage events as the same when computing clickthrough rate.
+* Sometimes click events were not recorded while visitPage events were. This problem were solved in June 2016 by [T137262](https://phabricator.wikimedia.org/T137262). For this analysis, we treat both click event and visitPage event as a "click" when computing clickthrough rate, i.e. if there is either a click or a visitPage event in a session, we will say there is a clickthrough in this session.
 * There were 6474 out of 301603 search sessions falling into both control and test buckets. We deleted those sessions in data cleansing step.
 
 ## Results
 
 ### Engagement
-Firstly, we compare the overall clickthrough rate between control and test group. The plot below shows that for each session, the control group has a significantly higher engagement; for each SERP, the test group has higher engagement, but the difference is not significant.
+Firstly, we compare the overall clickthrough rate between control and test group. We've checked that there is no significant difference in zero result rate between these two groups. The plot below shows that for each session, the control group has a significantly higher engagement; for each SERP, the test group has higher engagement, but the difference is not significant.
 
 ```r
 # Compare overall CTR
@@ -206,7 +206,7 @@ plot_grid(p_ctr_ses, p_ctr_serp)
 
 ![](index_files/figure-html/engagement_overall-1.png)<!-- -->
 
-Next, we compare the clickthrough rates on second and third position by test groups. All the differences in the graph below are significant. In both control and test group, the clickthrough rates on position 2 are higher than position 3, which implies that people care more about position than the actual content. The engagement of 3rd results in test group is higher than that in control group, but it doesn't rise to compensate. 
+Next, we compare the clickthrough rates on second and third position by test groups. All the differences in the graph below are significant. In both control and test group, the clickthrough rates on position 2 are higher than position 3. When comparing the same position between groups, the engagement of 3rd results in test group is higher than that in control group, but it is not as high as its counterpart, the 2nd results in control group. 
 
 
 ```r
@@ -306,68 +306,42 @@ first_clicked %>%
 
 ### Dwell Time per Visited Page
 
-First we compare the overall survival curves between the two groups. Surprisingly, the test group users are more likely to stay longer on visited pages. 
+First we compare the overall survival curves between the two groups. Surprisingly, the test group users are significantly more likely to stay longer on visited pages. 
 
 
 ```r
 # Compare overall dwell time 
-clickedResults %>%
-  split(.$`test group`) %>% 
-  map_df(function(df) {
-    seconds <- c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420)
-    seshs <- as.data.frame(do.call(cbind, lapply(seconds, function(second) {
-      return(sum(df$dwell_time >= second))
-    })))
-    names(seshs) <- seconds
-    return(cbind(`test group` = head(df$`test group`, 1), n = seshs$`0`, seshs, `450`=seshs$`420`))
-  }) %>%
-  gather(seconds, visits, -c(`test group`, n)) %>%
-  mutate(seconds = as.numeric(seconds)) %>%
-  group_by(`test group`, seconds) %>%
-  mutate(proportion = visits/n) %>%
-  ungroup() %>%
-  ggplot(aes(group=`test group`, color=`test group`)) +
-  geom_step(aes(x = seconds, y = proportion), direction = "hv") +
-  scale_x_continuous(name = "T (Dwell Time in seconds)", breaks=c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420))+ 
-  scale_y_continuous("Proportion of visits longer than T (P%)", labels = scales::percent_format(),
-                     breaks = seq(0, 1, 0.1)) +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom")
+temp <- clickedResults
+temp$SurvObj <- with(temp, survival::Surv(dwell_time, status == 2))
+fit_all <- survival::survfit(SurvObj ~ test_group, data = temp)
+survminer::ggsurvplot(fit_all, conf.int = TRUE, xlab="T (Dwell Time in seconds)", ylab="Proportion of visits longer than T (P%)", 
+                      surv.scale = "percent", palette="Set1", legend="bottom", legend.title = "Test Group", legend.labs=c("Control","swap2and3"))
 ```
 
 ![](index_files/figure-html/dwelltime_overall-1.png)<!-- -->
+
+```r
+rm(temp)
+```
 
 Next we compare the survival curves for users who clicked on second or third result. We can see that users in test group who clicked on 3rd result have longer dwell time than others. Users in test group who clicked on 2nd result are more likely to leave the visited page at the beginning, and those who stay tends to stay longer.
 
 
 ```r
-clickedResults %>%
-  filter(position %in% c(2,3)) %>%
-  mutate(`Test Group` = paste(`test group`, paste0("position",position), sep="_")) %>%
-  split(.$`Test Group`) %>% 
-  map_df(function(df) {
-    seconds <- c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420)
-    seshs <- as.data.frame(do.call(cbind, lapply(seconds, function(second) {
-      return(sum(df$dwell_time >= second))
-    })))
-    names(seshs) <- seconds
-    return(cbind(`Test Group` = head(df$`Test Group`, 1), n = seshs$`0`, seshs, `450`=seshs$`420`))
-  }) %>%
-  gather(seconds, visits, -c(`Test Group`, n)) %>%
-  mutate(seconds = as.numeric(seconds)) %>%
-  group_by(`Test Group`, seconds) %>%
-  mutate(proportion = visits/n) %>%
-  ungroup() %>%
-  ggplot(aes(group=`Test Group`, color=`Test Group`)) +
-  geom_step(aes(x = seconds, y = proportion), direction = "hv") +
-  scale_x_continuous(name = "T (Dwell Time in seconds)", breaks=c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420))+ 
-  scale_y_continuous("Proportion of visits longer than T (P%)", labels = scales::percent_format(),
-                     breaks = seq(0, 1, 0.1)) +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom")
+temp <- clickedResults %>% filter(position %in% c(2,3)) %>%
+  mutate(Test_Group = paste(test_group, paste0("position",position), sep="_"))
+temp$SurvObj <- with(temp, survival::Surv(dwell_time, status == 2))
+fit_2and3 <- survival::survfit(SurvObj ~ Test_Group, data = temp)
+survminer::ggsurvplot(fit_2and3, conf.int = TRUE, xlab="T (Dwell Time in seconds)", ylab="Proportion of visits longer than T (P%)", 
+                      surv.scale = "percent", palette="Set1", legend="bottom", legend.title = "Test Group",
+                      legend.labs=c("Control_position2","Control_position3","swap2and3_position2","swap2and3_position3"))
 ```
 
 ![](index_files/figure-html/dwelltime_2and3-1.png)<!-- -->
+
+```r
+rm(temp)
+```
 
 ### Scroll
 
@@ -377,7 +351,7 @@ Users in the test group are more likely to scroll on the visited page.
 ```r
 # Compare overall scroll proportion
 scroll_overall <- clickedResults %>%
-  group_by(`test group`) %>%
+  group_by(test_group) %>%
   summarize(scrolls=sum(scroll), visits=n(), proportion = sum(scroll)/n()) %>%
   ungroup
 scroll_overall <- cbind(
@@ -389,7 +363,7 @@ scroll_overall <- cbind(
   )
 )
 scroll_overall %>%
-  ggplot(aes(x = 1, y = mean, color = `test group`)) +
+  ggplot(aes(x = 1, y = mean, color = test_group)) +
   geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(width = 1)) +
   scale_color_brewer("Test Group", palette = "Set1", guide = guide_legend(ncol = 2)) +
   scale_y_continuous(labels = scales::percent_format(), expand = c(0.01, 0.01)) +
@@ -409,7 +383,7 @@ Users in test group who clicked on the 3rd result are more likely to scroll on t
 # Compare position 2 and 3
 scroll_2and3 <- clickedResults %>%
   filter(position %in% c(2,3)) %>%
-  mutate(`Test Group` = paste(`test group`, paste0("position",position), sep="_")) %>%
+  mutate(`Test Group` = paste(test_group, paste0("position",position), sep="_")) %>%
   group_by(`Test Group`) %>%
   summarize(scrolls=sum(scroll), visits=n(), proportion = sum(scroll)/n()) %>%
   ungroup
@@ -435,6 +409,9 @@ scroll_2and3 %>%
 
 ![](index_files/figure-html/scroll_2and3-1.png)<!-- -->
 
-## Conclusion and Discussion
+## Discussion
 
+Since we only swap the second and third result in this test and the results above are somewhat confusing, it is hard to conclude that users care more about position than actual content of the result. Instead, we guess that users tend to look at only the first two results, when they find the first two are not relevant, some of them start to look at the third result and care more about the actual content. This explains why the overall engagement is lower in test group (since the second results in test group are less relevant), and why the clickthrough rates on position 2 are always higher than position 3, but engagement of 3rd results in test group is higher than that in control group. It also explains why test group users are more likely to click on the third result first, why test group users who click on the 3rd result have a longer dwell time, and why test group has a longer dwell time overall and more likely to scroll on the visited page (because test group users who are confused by the swapping process but still open the result care more about the actual content). However, without further experiment, we cannot prove our guess.
+
+Additionally, instead of making explicit control buckets, we simply treat those users who didn't get assigned to test group as control group users. We suspect that this behavior results in putting all users who don't have the new javascript into control group automatically, so some metrics may be biased.
 

@@ -1,4 +1,11 @@
 library(cowplot)
+
+## Compare ZRR 
+searches %>%
+  group_by(`test group`) %>%
+  summarise(zero_result = sum(results=="zero"), searches = n(), zrr = sum(results=="zero")/n()) %>%
+  cbind(binom:::binom.bayes(.$zero_result, n=.$searches)[, c("mean", "lower", "upper")]) 
+
 ######
 # Engagement
 ######
@@ -160,32 +167,39 @@ first_clicked %>%
 ######
 # Compare overall dwell time 
 clickedResults %>%
-  split(.$`test group`) %>% 
+  split(.$test_group) %>% 
   map_df(function(df) {
     seconds <- c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420)
     seshs <- as.data.frame(do.call(cbind, lapply(seconds, function(second) {
       return(sum(df$dwell_time >= second))
     })))
     names(seshs) <- seconds
-    return(cbind(`test group` = head(df$`test group`, 1), n = seshs$`0`, seshs, `450`=seshs$`420`))
+    return(cbind(test_group = head(df$test_group, 1), n = seshs$`0`, seshs, `450`=seshs$`420`))
   }) %>%
-  gather(seconds, visits, -c(`test group`, n)) %>%
+  gather(seconds, visits, -c(test_group, n)) %>%
   mutate(seconds = as.numeric(seconds)) %>%
-  group_by(`test group`, seconds) %>%
+  group_by(test_group, seconds) %>%
   mutate(proportion = visits/n) %>%
   ungroup() %>%
-  ggplot(aes(group=`test group`, color=`test group`)) +
+  ggplot(aes(group=test_group, color=test_group)) +
   geom_step(aes(x = seconds, y = proportion), direction = "hv") +
   scale_x_continuous(name = "T (Dwell Time in seconds)", breaks=c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420))+ 
   scale_y_continuous("Proportion of visits longer than T (P%)", labels = scales::percent_format(),
                      breaks = seq(0, 1, 0.1)) +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom")
+# survival curve with CI
+temp <- clickedResults
+temp$SurvObj <- with(temp, survival::Surv(dwell_time, status == 2))
+fit_all <- survival::survfit(SurvObj ~ test_group, data = temp)
+survminer::ggsurvplot(fit_all, conf.int = TRUE, xlab="T (Dwell Time in seconds)", ylab="Proportion of visits longer than T (P%)", 
+                      surv.scale = "percent", palette="Set1", legend="bottom", legend.title = "Test Group", legend.labs=c("Control","swap2and3"))
+rm(temp)
 
 # Compare position 2 and 3
 clickedResults %>%
   filter(position %in% c(2,3)) %>%
-  mutate(`Test Group` = paste(`test group`, paste0("position",position), sep="_")) %>%
+  mutate(`Test Group` = paste(test_group, paste0("position",position), sep="_")) %>%
   split(.$`Test Group`) %>% 
   map_df(function(df) {
     seconds <- c(0, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420)
@@ -207,6 +221,15 @@ clickedResults %>%
                      breaks = seq(0, 1, 0.1)) +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "bottom")
+# survival curve with CI
+temp <- clickedResults %>% filter(position %in% c(2,3)) %>%
+  mutate(Test_Group = paste(test_group, paste0("position",position), sep="_"))
+temp$SurvObj <- with(temp, survival::Surv(dwell_time, status == 2))
+fit_2and3 <- survival::survfit(SurvObj ~ Test_Group, data = temp)
+survminer::ggsurvplot(fit_2and3, conf.int = TRUE, xlab="T (Dwell Time in seconds)", ylab="Proportion of visits longer than T (P%)", 
+                      surv.scale = "percent", palette="Set1", legend="bottom", legend.title = "Test Group",
+                      legend.labs=c("Control_position2","Control_position3","swap2and3_position2","swap2and3_position3"))
+rm(temp)
 
 
 ######
@@ -214,7 +237,7 @@ clickedResults %>%
 ######
 # Compare overall scroll proportion
 scroll_overall <- clickedResults %>%
-  group_by(`test group`) %>%
+  group_by(test_group) %>%
   summarize(scrolls=sum(scroll), visits=n(), proportion = sum(scroll)/n()) %>%
   ungroup
 scroll_overall <- cbind(
@@ -226,7 +249,7 @@ scroll_overall <- cbind(
   )
 )
 scroll_overall %>%
-  ggplot(aes(x = 1, y = mean, color = `test group`)) +
+  ggplot(aes(x = 1, y = mean, color = test_group)) +
   geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(width = 1)) +
   scale_color_brewer("Test Group", palette = "Set1", guide = guide_legend(ncol = 2)) +
   scale_y_continuous(labels = scales::percent_format(), expand = c(0.01, 0.01)) +
@@ -239,7 +262,7 @@ scroll_overall %>%
 # Compare position 2 and 3
 scroll_2and3 <- clickedResults %>%
   filter(position %in% c(2,3)) %>%
-  mutate(`Test Group` = paste(`test group`, paste0("position",position), sep="_")) %>%
+  mutate(`Test Group` = paste(test_group, paste0("position",position), sep="_")) %>%
   group_by(`Test Group`) %>%
   summarize(scrolls=sum(scroll), visits=n(), proportion = sum(scroll)/n()) %>%
   ungroup
